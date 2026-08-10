@@ -1,0 +1,73 @@
+.transaction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3a3e52;
+}
+
+.form-field__control {
+  padding: 9px 12px;
+  border: 1px solid #d5d7e2;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1c1e26;
+  background: #ffffff;
+}
+
+.form-field__control:focus {
+  outline: 2px solid #4c5fd5;
+  outline-offset: 1px;
+}
+
+.form-field__error {
+  margin: 0;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+.transaction-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: #4c5fd5;
+  color: #ffffff;
+}
+
+.button--primary:hover {
+  background: #3f4fc0;
+}
+
+.button--secondary {
+  background: #ececf1;
+  color: #3a3e52;
+}
+
+.button--secondary:hover {
+  background: #e0e1ea;
+}

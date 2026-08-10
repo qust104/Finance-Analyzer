@@ -14,5 +14,7 @@ export function formatDate(isoDate: string): string {
 
 // Amounts are stored positive; the sign is only a display concern.
 export function formatAmount(amount: number, type: TransactionType): string {
-  return type === 'income' ? `+${currencyFormatter.format(amount)}` : `\u2212${currencyFormatter.format(amount)}`
+  return type === 'income'
+    ? `+${currencyFormatter.format(amount)}`
+    : `\u2212${currencyFormatter.format(amount)}`
 }

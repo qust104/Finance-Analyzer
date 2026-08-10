@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project prompts and design mockups (not for the public repo)
+Finance Analyzer maket.png
+MASTER PROMPT *.md
+PROJECT_PLAN.md

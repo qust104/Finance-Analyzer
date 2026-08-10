@@ -1,5 +1,85 @@
-import { PageContainer } from '../../shared/ui/PageContainer'
+import { useState } from 'react'
+import type { Transaction } from '../../entities/transaction/model/types'
+import type { TransactionInput } from '../../entities/transaction/model/repository'
+import { TransactionForm } from '../../entities/transaction/ui/TransactionForm'
+import { TransactionCard } from '../../entities/transaction/ui/TransactionCard'
+import { TransactionList } from '../../entities/transaction/ui/TransactionList'
+import { Modal } from '../../shared/ui/Modal'
+import { useTransactions } from './useTransactions'
+import './TransactionsPage.css'
 
 export function TransactionsPage() {
-  return <PageContainer title="Transactions" />
+  const { transactions, addTransaction, updateTransaction, removeTransaction } = useTransactions()
+  const [editing, setEditing] = useState<Transaction | 'new' | null>(null)
+
+  // Until Day 4 the list is simply sorted by date, newest first.
+  const sortedTransactions = [...transactions].sort((a, b) => b.date.localeCompare(a.date))
+
+  const handleSubmit = (input: TransactionInput) => {
+    if (editing === 'new') {
+      addTransaction(input)
+    } else if (editing) {
+      updateTransaction(editing.id, input)
+    }
+    setEditing(null)
+  }
+
+  return (
+    <section>
+      <div className="transactions-header">
+        <h1 className="page-title">Transactions</h1>
+        <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
+          Add transaction
+        </button>
+      </div>
+
+      {sortedTransactions.length === 0 ? (
+        <div className="empty-state">
+          <p className="empty-state__title">No transactions yet</p>
+          <p className="empty-state__hint">
+            Add your first transaction to start tracking your finances.
+          </p>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => setEditing('new')}
+          >
+            Add transaction
+          </button>
+        </div>
+      ) : (
+        <>
+          <TransactionList
+            transactions={sortedTransactions}
+            onEdit={setEditing}
+            onDelete={removeTransaction}
+          />
+          <ul className="transaction-cards">
+            {sortedTransactions.map((transaction) => (
+              <li key={transaction.id} className="transaction-cards__item">
+                <TransactionCard
+                  transaction={transaction}
+                  onEdit={setEditing}
+                  onDelete={removeTransaction}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {editing !== null && (
+        <Modal
+          title={editing === 'new' ? 'Add transaction' : 'Edit transaction'}
+          onClose={() => setEditing(null)}
+        >
+          <TransactionForm
+            initialValue={editing === 'new' ? undefined : editing}
+            onSubmit={handleSubmit}
+            onCancel={() => setEditing(null)}
+          />
+        </Modal>
+      )}
+    </section>
+  )
 }

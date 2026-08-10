@@ -22,7 +22,9 @@ export function generateId(): string {
 
 // UI must never know where data physically lives.
 // Today it is memory, tomorrow localStorage, later an API.
-export function createMemoryTransactionRepository(initial: readonly Transaction[] = seedTransactions): TransactionRepository {
+export function createMemoryTransactionRepository(
+  initial: readonly Transaction[] = seedTransactions,
+): TransactionRepository {
   let transactions = [...initial]
 
   return {
@@ -42,7 +44,9 @@ export function createMemoryTransactionRepository(initial: readonly Transaction[
         throw new Error(`Transaction with id "${id}" not found`)
       }
       const updated: Transaction = { ...transactions[index], ...input }
-      transactions = transactions.map((transaction) => (transaction.id === id ? updated : transaction))
+      transactions = transactions.map((transaction) =>
+        transaction.id === id ? updated : transaction,
+      )
       return updated
     },
 

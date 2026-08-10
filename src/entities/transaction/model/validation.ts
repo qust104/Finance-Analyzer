@@ -9,13 +9,9 @@ export interface TransactionFormValues {
   date: string
 }
 
-export type TransactionFormErrors = Partial<
-  Record<keyof TransactionFormValues, string>
->
+export type TransactionFormErrors = Partial<Record<keyof TransactionFormValues, string>>
 
-export function validateTransactionForm(
-  values: TransactionFormValues,
-): TransactionFormErrors {
+export function validateTransactionForm(values: TransactionFormValues): TransactionFormErrors {
   const errors: TransactionFormErrors = {}
 
   const amount = Number(values.amount)
