@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { createMemoryTransactionRepository } from '../../entities/transaction/model/repository'
+import { createLocalStorageTransactionRepository } from '../../entities/transaction/model/repository'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import type { Transaction } from '../../entities/transaction/model/types'
 
-const repository = createMemoryTransactionRepository()
+const repository = createLocalStorageTransactionRepository()
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>(() => repository.getAll())

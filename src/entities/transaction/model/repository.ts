@@ -1,4 +1,5 @@
 import { seedTransactions } from '../../../data/seed'
+import { readTransactions, writeTransactions } from './transactionStorage'
 import type { Category, Transaction, TransactionType } from './types'
 
 export interface TransactionInput {
@@ -21,7 +22,7 @@ export function generateId(): string {
 }
 
 // UI must never know where data physically lives.
-// Today it is memory, tomorrow localStorage, later an API.
+// Memory stays useful for tests; localStorage is the runtime source today.
 export function createMemoryTransactionRepository(
   initial: readonly Transaction[] = seedTransactions,
 ): TransactionRepository {
@@ -52,6 +53,43 @@ export function createMemoryTransactionRepository(
 
     delete(id) {
       transactions = transactions.filter((transaction) => transaction.id !== id)
+    },
+  }
+}
+
+export function createLocalStorageTransactionRepository(
+  initial: readonly Transaction[] = seedTransactions,
+): TransactionRepository {
+  let transactions = readTransactions() ?? [...initial]
+
+  const persist = (next: Transaction[]) => {
+    transactions = next
+    writeTransactions(transactions)
+  }
+
+  return {
+    getAll() {
+      return [...transactions]
+    },
+
+    create(input) {
+      const transaction: Transaction = { id: generateId(), ...input }
+      persist([transaction, ...transactions])
+      return transaction
+    },
+
+    update(id, input) {
+      const index = transactions.findIndex((transaction) => transaction.id === id)
+      if (index === -1) {
+        throw new Error(`Transaction with id "${id}" not found`)
+      }
+      const updated: Transaction = { ...transactions[index], ...input }
+      persist(transactions.map((transaction) => (transaction.id === id ? updated : transaction)))
+      return updated
+    },
+
+    delete(id) {
+      persist(transactions.filter((transaction) => transaction.id !== id))
     },
   }
 }
