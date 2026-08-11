@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { LoadingState } from '../../shared/ui/AsyncStates'
 import './AppLayout.css'
 
 const NAV_ITEMS = [
@@ -29,7 +31,9 @@ export function AppLayout() {
         </nav>
       </aside>
       <main className="layout__main">
-        <Outlet />
+        <Suspense fallback={<LoadingState />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

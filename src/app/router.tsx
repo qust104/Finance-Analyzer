@@ -1,10 +1,5 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './layouts/AppLayout'
-import { DashboardPage } from '../pages/Dashboard/DashboardPage'
-import { TransactionsPage } from '../pages/Transactions/TransactionsPage'
-import { AnalyticsPage } from '../pages/Analytics/AnalyticsPage'
-import { BudgetsPage } from '../pages/Budgets/BudgetsPage'
-import { SettingsPage } from '../pages/Settings/SettingsPage'
 
 export const router = createBrowserRouter([
   {
@@ -12,11 +7,35 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'transactions', element: <TransactionsPage /> },
-      { path: 'analytics', element: <AnalyticsPage /> },
-      { path: 'budgets', element: <BudgetsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
+      {
+        path: 'dashboard',
+        lazy: () =>
+          import('../pages/Dashboard/DashboardPage').then((m) => ({ Component: m.DashboardPage })),
+      },
+      {
+        path: 'transactions',
+        lazy: () =>
+          import('../pages/Transactions/TransactionsPage').then((m) => ({
+            Component: m.TransactionsPage,
+          })),
+      },
+      {
+        path: 'analytics',
+        lazy: () =>
+          import('../pages/Analytics/AnalyticsPage').then((m) => ({
+            Component: m.AnalyticsPage,
+          })),
+      },
+      {
+        path: 'budgets',
+        lazy: () =>
+          import('../pages/Budgets/BudgetsPage').then((m) => ({ Component: m.BudgetsPage })),
+      },
+      {
+        path: 'settings',
+        lazy: () =>
+          import('../pages/Settings/SettingsPage').then((m) => ({ Component: m.SettingsPage })),
+      },
     ],
   },
 ])
