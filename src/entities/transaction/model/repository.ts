@@ -22,9 +22,11 @@ export function generateId(): string {
 }
 
 // UI must never know where data physically lives.
-// Memory stays useful for tests; localStorage is the runtime source today.
-export function createMemoryTransactionRepository(
-  initial: readonly Transaction[] = seedTransactions,
+// The storage source differs, but CRUD behavior is identical,
+// so both factories share one implementation.
+function createTransactionRepository(
+  initial: readonly Transaction[],
+  persist: (next: Transaction[]) => void,
 ): TransactionRepository {
   let transactions = [...initial]
 
@@ -36,6 +38,7 @@ export function createMemoryTransactionRepository(
     create(input) {
       const transaction: Transaction = { id: generateId(), ...input }
       transactions = [transaction, ...transactions]
+      persist(transactions)
       return transaction
     },
 
@@ -48,48 +51,26 @@ export function createMemoryTransactionRepository(
       transactions = transactions.map((transaction) =>
         transaction.id === id ? updated : transaction,
       )
+      persist(transactions)
       return updated
     },
 
     delete(id) {
       transactions = transactions.filter((transaction) => transaction.id !== id)
+      persist(transactions)
     },
   }
+}
+
+// In-memory storage stays useful for tests and previews.
+export function createMemoryTransactionRepository(
+  initial: readonly Transaction[] = seedTransactions,
+): TransactionRepository {
+  return createTransactionRepository(initial, () => {})
 }
 
 export function createLocalStorageTransactionRepository(
   initial: readonly Transaction[] = seedTransactions,
 ): TransactionRepository {
-  let transactions = readTransactions() ?? [...initial]
-
-  const persist = (next: Transaction[]) => {
-    transactions = next
-    writeTransactions(transactions)
-  }
-
-  return {
-    getAll() {
-      return [...transactions]
-    },
-
-    create(input) {
-      const transaction: Transaction = { id: generateId(), ...input }
-      persist([transaction, ...transactions])
-      return transaction
-    },
-
-    update(id, input) {
-      const index = transactions.findIndex((transaction) => transaction.id === id)
-      if (index === -1) {
-        throw new Error(`Transaction with id "${id}" not found`)
-      }
-      const updated: Transaction = { ...transactions[index], ...input }
-      persist(transactions.map((transaction) => (transaction.id === id ? updated : transaction)))
-      return updated
-    },
-
-    delete(id) {
-      persist(transactions.filter((transaction) => transaction.id !== id))
-    },
-  }
+  return createTransactionRepository(readTransactions() ?? [...initial], writeTransactions)
 }

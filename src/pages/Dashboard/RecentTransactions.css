@@ -58,4 +58,13 @@
   min-width: 100px;
   text-align: right;
   white-space: nowrap;
+  font-weight: 600;
+}
+
+.recent-transactions__amount--income {
+  color: #1e8e3e;
+}
+
+.recent-transactions__amount--expense {
+  color: #d93025;
 }

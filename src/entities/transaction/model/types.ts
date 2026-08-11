@@ -25,6 +25,11 @@ export const ALL_CATEGORIES = [
   'other',
 ] as const satisfies readonly Category[]
 
+export const TYPE_LABELS: Record<TransactionType, string> = {
+  income: 'Income',
+  expense: 'Expense',
+}
+
 export const CATEGORY_LABELS: Record<Category, string> = {
   salary: 'Salary',
   food: 'Food',

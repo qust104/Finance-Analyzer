@@ -1,5 +1,6 @@
+import { hasActiveFilters } from '../model/filters'
 import type { TransactionFilters } from '../model/filters'
-import { formatMonthKey, hasActiveFilters } from '../model/filters'
+import { formatMonthKey } from '../../../shared/lib/format'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
 import './TransactionFilters.css'
 

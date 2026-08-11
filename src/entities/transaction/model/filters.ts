@@ -111,9 +111,3 @@ export function getAvailableMonths(transactions: readonly Transaction[]): string
   const months = new Set(transactions.map((transaction) => transaction.date.slice(0, 7)))
   return [...months].sort().reverse()
 }
-
-export function formatMonthKey(month: string): string {
-  const [year, monthIndex] = month.split('-')
-  const date = new Date(Number(year), Number(monthIndex) - 1, 1)
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-}

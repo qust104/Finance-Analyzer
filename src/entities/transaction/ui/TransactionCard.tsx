@@ -1,5 +1,5 @@
 import type { Transaction } from '../model/types'
-import { CATEGORY_LABELS } from '../model/types'
+import { CATEGORY_LABELS, TYPE_LABELS } from '../model/types'
 import { formatAmount, formatDate } from '../../../shared/lib/format'
 import './TransactionList.css'
 
@@ -14,7 +14,7 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
     <article className="transaction-card">
       <div className="transaction-card__top">
         <span className={`transaction-type transaction-type--${transaction.type}`}>
-          {transaction.type === 'income' ? 'Income' : 'Expense'}
+          {TYPE_LABELS[transaction.type]}
         </span>
         <span className={`transaction-amount transaction-amount--${transaction.type}`}>
           {formatAmount(transaction.amount, transaction.type)}

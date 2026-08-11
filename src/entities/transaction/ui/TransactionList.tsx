@@ -1,5 +1,5 @@
 import type { Transaction } from '../model/types'
-import { CATEGORY_LABELS } from '../model/types'
+import { CATEGORY_LABELS, TYPE_LABELS } from '../model/types'
 import { formatAmount, formatDate } from '../../../shared/lib/format'
 import './TransactionList.css'
 
@@ -7,11 +7,6 @@ interface TransactionListProps {
   transactions: Transaction[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
-}
-
-const TYPE_LABELS: Record<Transaction['type'], string> = {
-  income: 'Income',
-  expense: 'Expense',
 }
 
 export function TransactionList({ transactions, onEdit, onDelete }: TransactionListProps) {

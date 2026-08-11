@@ -27,7 +27,9 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
               {CATEGORY_LABELS[transaction.category]}
             </span>
             <span className="recent-transactions__date">{formatDate(transaction.date)}</span>
-            <span className={`recent-transactions__amount transaction-amount--${transaction.type}`}>
+            <span
+              className={`recent-transactions__amount recent-transactions__amount--${transaction.type}`}
+            >
               {formatAmount(transaction.amount, transaction.type)}
             </span>
           </li>

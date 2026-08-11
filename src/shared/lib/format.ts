@@ -1,4 +1,3 @@
-import { formatMonthKey } from '../../entities/transaction/model/filters'
 import type { TransactionType } from '../../entities/transaction/model/types'
 
 const currencyFormatter = new Intl.NumberFormat('ru-RU', {
@@ -11,6 +10,12 @@ const currencyFormatter = new Intl.NumberFormat('ru-RU', {
 export function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-')
   return `${day}.${month}.${year}`
+}
+
+export function formatMonthKey(month: string): string {
+  const [year, monthIndex] = month.split('-')
+  const date = new Date(Number(year), Number(monthIndex) - 1, 1)
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
 export function formatCurrency(amount: number): string {
