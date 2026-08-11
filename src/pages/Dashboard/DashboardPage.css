@@ -5,6 +5,10 @@
   align-items: start;
 }
 
+.dashboard-insights {
+  margin-top: 16px;
+}
+
 @media (max-width: 980px) {
   .dashboard-grid {
     grid-template-columns: 1fr;

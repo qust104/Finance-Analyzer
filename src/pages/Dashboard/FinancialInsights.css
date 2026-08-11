@@ -1,0 +1,63 @@
+.insights {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fafbfd;
+  border: 1px solid #ececf1;
+}
+
+.insight__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.insight__icon--warning {
+  background: #d93025;
+}
+
+.insight__icon--positive {
+  background: #1e8e3e;
+}
+
+.insight__icon--info {
+  background: #4c5fd5;
+}
+
+.insight__title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1e26;
+}
+
+.insight__description {
+  margin: 0;
+  font-size: 13px;
+  color: #3a3e52;
+  line-height: 1.45;
+}
+
+.insights-empty {
+  margin: 12px 0 4px;
+  color: #82869c;
+  font-size: 14px;
+}

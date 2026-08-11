@@ -2,6 +2,7 @@ import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { BudgetOverview } from './BudgetOverview'
 import { CashFlowChart } from './CashFlowChart'
+import { FinancialInsights } from './FinancialInsights'
 import { FinancialSummary } from './FinancialSummary'
 import { RecentTransactions } from './RecentTransactions'
 import { SpendingByCategory } from './SpendingByCategory'
@@ -20,6 +21,9 @@ export function DashboardPage() {
         <SpendingByCategory transactions={transactions} />
         <BudgetOverview transactions={transactions} budgets={budgets} />
         <RecentTransactions transactions={transactions} />
+      </div>
+      <div className="dashboard-insights">
+        <FinancialInsights transactions={transactions} budgets={budgets} />
       </div>
     </section>
   )
