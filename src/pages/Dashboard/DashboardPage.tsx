@@ -11,7 +11,12 @@ import './DashboardPage.css'
 
 export function DashboardPage() {
   const { transactions, isPending, isError, refetch } = useTransactions()
-  const { budgets, isPending: budgetsPending, isError: budgetsError } = useBudgets()
+  const {
+    budgets,
+    isPending: budgetsPending,
+    isError: budgetsError,
+    refetch: refetchBudgets,
+  } = useBudgets()
 
   if (isPending || budgetsPending) {
     return (
@@ -26,7 +31,12 @@ export function DashboardPage() {
     return (
       <section>
         <h1 className="page-title">Dashboard</h1>
-        <ErrorState onRetry={refetch} />
+        <ErrorState
+          onRetry={() => {
+            void refetch()
+            void refetchBudgets()
+          }}
+        />
       </section>
     )
   }

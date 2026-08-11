@@ -1,10 +1,4 @@
 import { http, HttpResponse } from 'msw'
-
-// Node has no location, so relative paths never match in tests;
-// the browser resolves "window.location.origin" to the same base.
-export const API_BASE = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
-import { getLatestMonthKey } from '../analytics/budgets'
-import { generateInsights } from '../analytics/insights'
 import {
   calculateBalance,
   calculateSavings,
@@ -12,9 +6,15 @@ import {
   calculateTotalExpenses,
   calculateTotalIncome,
 } from '../analytics/calculations'
+import { getLatestMonthKey } from '../analytics/budgets'
+import { generateInsights } from '../analytics/insights'
 import { createLocalStorageBudgetRepository } from '../entities/budget/model/budgetRepository'
 import { createLocalStorageTransactionRepository } from '../entities/transaction/model/repository'
 import { transactionSchema } from '../entities/transaction/model/transactionSchema'
+
+// Node has no location, so relative paths never match in tests;
+// the browser resolves "window.location.origin" to the same base.
+export const API_BASE = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
 
 // The mock backend is the server side of the app: it keeps working
 // against the same localStorage storage layer and hands out data

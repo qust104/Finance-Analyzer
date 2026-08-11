@@ -10,8 +10,14 @@ import App from './app/App.tsx'
 const queryClient = new QueryClient()
 
 async function mount() {
-  const { worker } = await import('./mocks/browser')
-  await worker.start({ onUnhandledRequest: 'bypass' })
+  try {
+    const { worker } = await import('./mocks/browser')
+    await worker.start({ onUnhandledRequest: 'bypass' })
+  } catch {
+    // If the worker cannot start (private browsing, blocked service
+    // worker registration) the app still mounts: requests fail and
+    // the error states take over instead of a blank screen.
+  }
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

@@ -50,10 +50,6 @@ function createBudgetRepository(
   }
 }
 
-export function createMemoryBudgetRepository(initial: readonly Budget[] = []): BudgetRepository {
-  return createBudgetRepository(initial, () => {})
-}
-
 export function createLocalStorageBudgetRepository(
   initial: readonly Budget[] = [],
 ): BudgetRepository {

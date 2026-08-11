@@ -62,13 +62,7 @@ function createTransactionRepository(
   }
 }
 
-// In-memory storage stays useful for tests and previews.
-export function createMemoryTransactionRepository(
-  initial: readonly Transaction[] = seedTransactions,
-): TransactionRepository {
-  return createTransactionRepository(initial, () => {})
-}
-
+// In-memory variant no longer exists: the mock API owns repositories now.
 export function createLocalStorageTransactionRepository(
   initial: readonly Transaction[] = seedTransactions,
 ): TransactionRepository {
