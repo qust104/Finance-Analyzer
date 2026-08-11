@@ -13,13 +13,16 @@ import { TransactionList } from '../../entities/transaction/ui/TransactionList'
 import { Modal } from '../../shared/ui/Modal'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
+import { ImportTransactionsModal } from '../../features/import-transactions/ImportTransactionsModal'
 import './TransactionsPage.css'
 import '../../shared/ui/form.css'
 
 export function TransactionsPage() {
-  const { transactions, addTransaction, updateTransaction, removeTransaction } = useTransactions()
+  const { transactions, addTransaction, addTransactions, updateTransaction, removeTransaction } =
+    useTransactions()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
   const [editing, setEditing] = useState<Transaction | 'new' | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const filteredTransactions = applyFilters(transactions, filters)
   const months = getAvailableMonths(transactions)
@@ -33,15 +36,33 @@ export function TransactionsPage() {
     setEditing(null)
   }
 
+  const handleImport = (inputs: readonly TransactionInput[]) => {
+    addTransactions(inputs)
+    setImportOpen(false)
+  }
+
   const matchesNothing = transactions.length > 0 && filteredTransactions.length === 0
 
   return (
     <section>
       <div className="transactions-header">
         <h1 className="page-title">Transactions</h1>
-        <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
-          Add transaction
-        </button>
+        <div className="transactions-header__actions">
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={() => setImportOpen(true)}
+          >
+            Import CSV
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => setEditing('new')}
+          >
+            Add transaction
+          </button>
+        </div>
       </div>
 
       <TransactionFilters
@@ -106,6 +127,14 @@ export function TransactionsPage() {
             onCancel={() => setEditing(null)}
           />
         </Modal>
+      )}
+
+      {importOpen && (
+        <ImportTransactionsModal
+          transactions={transactions}
+          onImport={handleImport}
+          onClose={() => setImportOpen(false)}
+        />
       )}
     </section>
   )

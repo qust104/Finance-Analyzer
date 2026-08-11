@@ -13,6 +13,13 @@ export function useTransactions() {
     setTransactions((prev) => [created, ...prev])
   }
 
+  // CSV import can insert hundreds of rows at once:
+  // one repo call per row, but a single state update.
+  const addTransactions = (inputs: readonly TransactionInput[]) => {
+    const created = inputs.map((input) => repository.create(input))
+    setTransactions((prev) => [...created, ...prev])
+  }
+
   const updateTransaction = (id: string, input: TransactionInput) => {
     const updated = repository.update(id, input)
     setTransactions((prev) =>
@@ -25,5 +32,5 @@ export function useTransactions() {
     setTransactions((prev) => prev.filter((transaction) => transaction.id !== id))
   }
 
-  return { transactions, addTransaction, updateTransaction, removeTransaction }
+  return { transactions, addTransaction, addTransactions, updateTransaction, removeTransaction }
 }

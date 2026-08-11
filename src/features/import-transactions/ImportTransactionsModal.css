@@ -1,0 +1,133 @@
+.import {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.import__hint {
+  margin: 0;
+  font-size: 13px;
+  color: #3a3e52;
+  line-height: 1.6;
+}
+
+.import__hint code {
+  background: #f2f3f7;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+.import__picker {
+  align-self: flex-start;
+  position: relative;
+  cursor: pointer;
+}
+
+.import__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.import__file-errors {
+  background: #fdf1f0;
+  border: 1px solid #f3c2bd;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.import__file-errors-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #8c1d11;
+}
+
+.import__file-errors ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #8c1d11;
+}
+
+.import__summary {
+  margin: 0;
+  font-size: 14px;
+  color: #3a3e52;
+}
+
+.import__bad {
+  color: #c0392b;
+}
+
+.import__neutral {
+  color: #b7791f;
+}
+
+.import__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.import__table-wrap {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #ececf1;
+  border-radius: 8px;
+}
+
+.import__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.import__table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: #fafbfd;
+  color: #82869c;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.import__table td {
+  padding: 8px 12px;
+  border-top: 1px solid #f2f3f7;
+  color: #1c1e26;
+}
+
+.import__more {
+  margin: 8px 12px;
+  font-size: 12px;
+  color: #82869c;
+}
+
+.import__issues {
+  background: #fdf1f0;
+  border: 1px solid #f3c2bd;
+  border-radius: 8px;
+  padding: 12px 14px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.import__issues-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #8c1d11;
+}
+
+.import__issues-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #8c1d11;
+  line-height: 1.6;
+}

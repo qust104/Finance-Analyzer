@@ -5,6 +5,11 @@
   margin-bottom: 16px;
 }
 
+.transactions-header__actions {
+  display: flex;
+  gap: 8px;
+}
+
 .transactions-header .page-title {
   margin-bottom: 0;
 }
