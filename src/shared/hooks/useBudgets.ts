@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../../api/budgets'
 import type { Budget, BudgetInput } from '../../entities/budget/model/types'
@@ -19,7 +20,10 @@ export function useBudgets(): BudgetsApi {
     queryFn: api.getBudgets,
   })
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['budgets'] })
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['budgets'] }),
+    [queryClient],
+  )
 
   const create = useMutation({ mutationFn: api.createBudget, onSuccess: invalidate })
   const update = useMutation({
@@ -31,15 +35,23 @@ export function useBudgets(): BudgetsApi {
     onSuccess: invalidate,
   })
 
+  const addBudget = useCallback((input: BudgetInput) => create.mutate(input), [create])
+  const updateBudget = useCallback(
+    (id: string, input: BudgetInput) => update.mutate({ id, input }),
+    [update],
+  )
+  const removeBudget = useCallback((id: string) => remove.mutate(id), [remove])
+  const refetch = useCallback(() => {
+    void query.refetch()
+  }, [query])
+
   return {
     budgets: query.data ?? [],
     isPending: query.isPending,
     isError: query.isError,
-    addBudget: (input) => create.mutate(input),
-    updateBudget: (id, input) => update.mutate({ id, input }),
-    removeBudget: (id) => remove.mutate(id),
-    refetch: () => {
-      void query.refetch()
-    },
+    addBudget,
+    updateBudget,
+    removeBudget,
+    refetch,
   }
 }

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { CATEGORY_LABELS } from '../../entities/transaction/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
@@ -8,8 +9,13 @@ interface RecentTransactionsProps {
   transactions: readonly Transaction[]
 }
 
-export function RecentTransactions({ transactions }: RecentTransactionsProps) {
-  const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5)
+export const RecentTransactions = memo(function RecentTransactions({
+  transactions,
+}: RecentTransactionsProps) {
+  const recent = useMemo(
+    () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
+    [transactions],
+  )
 
   return (
     <div className="dashboard-card">
@@ -37,4 +43,4 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
       </ul>
     </div>
   )
-}
+})

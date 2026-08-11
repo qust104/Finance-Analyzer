@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { generateInsights } from '../../analytics/insights'
 import type { Insight } from '../../analytics/insights'
 import { getLatestMonthKey } from '../../analytics/budgets'
@@ -16,9 +17,14 @@ const INSIGHT_ICONS: Record<Insight['type'], string> = {
   info: 'i',
 }
 
-export function FinancialInsights({ transactions, budgets }: FinancialInsightsProps) {
-  const month = getLatestMonthKey(transactions)
-  const insights = generateInsights(transactions, budgets, month)
+export const FinancialInsights = memo(function FinancialInsights({
+  transactions,
+  budgets,
+}: FinancialInsightsProps) {
+  const insights = useMemo(() => {
+    const month = getLatestMonthKey(transactions)
+    return generateInsights(transactions, budgets, month)
+  }, [transactions, budgets])
 
   return (
     <div className="dashboard-card">
@@ -42,4 +48,4 @@ export function FinancialInsights({ transactions, budgets }: FinancialInsightsPr
       )}
     </div>
   )
-}
+})

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { calculateCategoryStats } from '../../analytics/calculations'
 import { CATEGORY_LABELS } from '../../entities/transaction/model/types'
@@ -10,10 +11,20 @@ interface SpendingByCategoryProps {
   transactions: readonly Transaction[]
 }
 
-export function SpendingByCategory({ transactions }: SpendingByCategoryProps) {
-  const stats = calculateCategoryStats(transactions)
+export const SpendingByCategory = memo(function SpendingByCategory({
+  transactions,
+}: SpendingByCategoryProps) {
+  const data = useMemo(() => {
+    const stats = calculateCategoryStats(transactions)
+    return stats.map((stat) => ({
+      name: CATEGORY_LABELS[stat.category],
+      value: stat.amount,
+      percentage: stat.percentage,
+      fill: CATEGORY_COLORS[stat.category],
+    }))
+  }, [transactions])
 
-  if (stats.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="dashboard-card">
         <h2 className="dashboard-card__title">Spending by Category</h2>
@@ -21,13 +32,6 @@ export function SpendingByCategory({ transactions }: SpendingByCategoryProps) {
       </div>
     )
   }
-
-  const data = stats.map((stat) => ({
-    name: CATEGORY_LABELS[stat.category],
-    value: stat.amount,
-    percentage: stat.percentage,
-    fill: CATEGORY_COLORS[stat.category],
-  }))
 
   return (
     <div className="dashboard-card">
@@ -76,4 +80,4 @@ export function SpendingByCategory({ transactions }: SpendingByCategoryProps) {
       </div>
     </div>
   )
-}
+})

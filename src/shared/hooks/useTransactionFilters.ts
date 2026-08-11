@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   DEFAULT_FILTERS,
@@ -12,13 +13,16 @@ export function useTransactionFilters() {
   const [searchParams, setSearchParams] = useSearchParams()
   const filters = parseFilters(searchParams)
 
-  const updateFilters = (patch: Partial<TransactionFilters>) => {
-    setSearchParams(serializeFilters({ ...filters, ...patch }), { replace: true })
-  }
+  const updateFilters = useCallback(
+    (patch: Partial<TransactionFilters>) => {
+      setSearchParams(serializeFilters({ ...filters, ...patch }), { replace: true })
+    },
+    [filters, setSearchParams],
+  )
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setSearchParams(serializeFilters(DEFAULT_FILTERS), { replace: true })
-  }
+  }, [setSearchParams])
 
   return { filters, updateFilters, resetFilters }
 }

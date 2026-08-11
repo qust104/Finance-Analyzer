@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -17,12 +18,18 @@ interface CashFlowChartProps {
   transactions: readonly Transaction[]
 }
 
-export function CashFlowChart({ transactions }: CashFlowChartProps) {
-  const data = calculateMonthlyStats(transactions).map((stat) => ({
-    month: formatMonthShort(stat.month),
-    income: stat.income,
-    expenses: stat.expenses,
-  }))
+export const CashFlowChart = memo(function CashFlowChart({
+  transactions,
+}: CashFlowChartProps) {
+  const data = useMemo(
+    () =>
+      calculateMonthlyStats(transactions).map((stat) => ({
+        month: formatMonthShort(stat.month),
+        income: stat.income,
+        expenses: stat.expenses,
+      })),
+    [transactions],
+  )
 
   return (
     <div className="dashboard-card">
@@ -71,4 +78,4 @@ export function CashFlowChart({ transactions }: CashFlowChartProps) {
       </div>
     </div>
   )
-}
+})

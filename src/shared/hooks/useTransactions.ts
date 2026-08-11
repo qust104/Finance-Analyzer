@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../../api/transactions'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
@@ -23,7 +24,10 @@ export function useTransactions(): TransactionsApi {
     queryFn: api.getTransactions,
   })
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['transactions'] })
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+    [queryClient],
+  )
 
   const create = useMutation({ mutationFn: api.createTransaction, onSuccess: invalidate })
   // CSV import commits many rows as one mutation so the cache
@@ -43,20 +47,38 @@ export function useTransactions(): TransactionsApi {
     onSuccess: invalidate,
   })
 
-  return {
-    transactions: query.data ?? [],
-    isPending: query.isPending,
-    isError: query.isError,
-    addTransaction: (input) => create.mutate(input),
-    addTransactions: (inputs) => {
+  // Mutation objects are stable, and the wrappers below are too:
+  // rows memoize on their callbacks, so unstable references would
+  // defeat that memoization and re-render the whole table.
+  const addTransaction = useCallback(
+    (input: TransactionInput) => create.mutate(input),
+    [create],
+  )
+  const addTransactions = useCallback(
+    (inputs: readonly TransactionInput[]) => {
       if (inputs.length > 0) {
         createMany.mutate(inputs)
       }
     },
-    updateTransaction: (id, input) => update.mutate({ id, input }),
-    removeTransaction: (id) => remove.mutate(id),
-    refetch: () => {
-      void query.refetch()
-    },
+    [createMany],
+  )
+  const updateTransaction = useCallback(
+    (id: string, input: TransactionInput) => update.mutate({ id, input }),
+    [update],
+  )
+  const removeTransaction = useCallback((id: string) => remove.mutate(id), [remove])
+  const refetch = useCallback(() => {
+    void query.refetch()
+  }, [query])
+
+  return {
+    transactions: query.data ?? [],
+    isPending: query.isPending,
+    isError: query.isError,
+    addTransaction,
+    addTransactions,
+    updateTransaction,
+    removeTransaction,
+    refetch,
   }
 }

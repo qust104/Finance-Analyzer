@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { calculateBudgetUsage, getLatestMonthKey } from '../../analytics/budgets'
 import type { Budget } from '../../entities/budget/model/types'
@@ -10,9 +11,14 @@ interface BudgetOverviewProps {
   budgets: readonly Budget[]
 }
 
-export function BudgetOverview({ transactions, budgets }: BudgetOverviewProps) {
-  const month = getLatestMonthKey(transactions)
-  const usages = calculateBudgetUsage(transactions, budgets, month)
+export const BudgetOverview = memo(function BudgetOverview({
+  transactions,
+  budgets,
+}: BudgetOverviewProps) {
+  const usages = useMemo(() => {
+    const month = getLatestMonthKey(transactions)
+    return calculateBudgetUsage(transactions, budgets, month)
+  }, [transactions, budgets])
 
   return (
     <div className="dashboard-card">
@@ -35,4 +41,4 @@ export function BudgetOverview({ transactions, budgets }: BudgetOverviewProps) {
       )}
     </div>
   )
-}
+})

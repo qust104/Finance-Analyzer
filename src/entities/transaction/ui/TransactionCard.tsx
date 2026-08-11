@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Transaction } from '../model/types'
 import { CATEGORY_LABELS, TYPE_LABELS } from '../model/types'
 import { formatAmount, formatDate } from '../../../shared/lib/format'
@@ -9,7 +10,11 @@ interface TransactionCardProps {
   onDelete: (id: string) => void
 }
 
-export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCardProps) {
+export const TransactionCard = memo(function TransactionCard({
+  transaction,
+  onEdit,
+  onDelete,
+}: TransactionCardProps) {
   return (
     <article className="transaction-card">
       <div className="transaction-card__top">
@@ -39,4 +44,4 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
       </div>
     </article>
   )
-}
+})

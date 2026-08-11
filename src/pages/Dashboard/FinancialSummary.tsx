@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { formatCurrency, formatPercent } from '../../shared/lib/format'
 import {
   calculateBalance,
@@ -13,20 +14,24 @@ interface FinancialSummaryProps {
   transactions: readonly Transaction[]
 }
 
-export function FinancialSummary({ transactions }: FinancialSummaryProps) {
-  const balance = calculateBalance(transactions)
-  const income = calculateTotalIncome(transactions)
-  const expenses = calculateTotalExpenses(transactions)
-  const savings = calculateSavings(transactions)
-  const savingsRate = calculateSavingsRate(transactions)
+export const FinancialSummary = memo(function FinancialSummary({
+  transactions,
+}: FinancialSummaryProps) {
+  const cards = useMemo(() => {
+    const balance = calculateBalance(transactions)
+    const income = calculateTotalIncome(transactions)
+    const expenses = calculateTotalExpenses(transactions)
+    const savings = calculateSavings(transactions)
+    const savingsRate = calculateSavingsRate(transactions)
 
-  const cards = [
-    { label: 'Total Balance', value: formatCurrency(balance), tone: 'neutral' },
-    { label: 'Income', value: formatCurrency(income), tone: 'positive' },
-    { label: 'Expenses', value: formatCurrency(expenses), tone: 'negative' },
-    { label: 'Savings', value: formatCurrency(savings), tone: 'positive' },
-    { label: 'Savings Rate', value: formatPercent(savingsRate), tone: 'neutral' },
-  ]
+    return [
+      { label: 'Total Balance', value: formatCurrency(balance), tone: 'neutral' },
+      { label: 'Income', value: formatCurrency(income), tone: 'positive' },
+      { label: 'Expenses', value: formatCurrency(expenses), tone: 'negative' },
+      { label: 'Savings', value: formatCurrency(savings), tone: 'positive' },
+      { label: 'Savings Rate', value: formatPercent(savingsRate), tone: 'neutral' },
+    ]
+  }, [transactions])
 
   return (
     <ul className="financial-summary">
@@ -38,4 +43,4 @@ export function FinancialSummary({ transactions }: FinancialSummaryProps) {
       ))}
     </ul>
   )
-}
+})

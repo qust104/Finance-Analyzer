@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import {
   applyFilters,
@@ -36,22 +37,33 @@ export function TransactionsPage() {
   const openImportModal = useUiStore((state) => state.openImportModal)
   const closeImportModal = useUiStore((state) => state.closeImportModal)
 
-  const filteredTransactions = applyFilters(transactions, filters)
-  const months = getAvailableMonths(transactions)
+  // Filtering runs on every keystroke of the search input: memoize the
+  // result so only the visible rows re-render, not the whole table.
+  const filteredTransactions = useMemo(
+    () => applyFilters(transactions, filters),
+    [transactions, filters],
+  )
+  const months = useMemo(() => getAvailableMonths(transactions), [transactions])
 
-  const handleSubmit = (input: TransactionInput) => {
-    if (editing === 'new') {
-      addTransaction(input)
-    } else if (editing) {
-      updateTransaction(editing.id, input)
-    }
-    closeTransactionForm()
-  }
+  const handleSubmit = useCallback(
+    (input: TransactionInput) => {
+      if (editing === 'new') {
+        addTransaction(input)
+      } else if (editing) {
+        updateTransaction(editing.id, input)
+      }
+      closeTransactionForm()
+    },
+    [editing, addTransaction, updateTransaction, closeTransactionForm],
+  )
 
-  const handleImport = (inputs: readonly TransactionInput[]) => {
-    addTransactions(inputs)
-    closeImportModal()
-  }
+  const handleImport = useCallback(
+    (inputs: readonly TransactionInput[]) => {
+      addTransactions(inputs)
+      closeImportModal()
+    },
+    [addTransactions, closeImportModal],
+  )
 
   const matchesNothing = transactions.length > 0 && filteredTransactions.length === 0
 
