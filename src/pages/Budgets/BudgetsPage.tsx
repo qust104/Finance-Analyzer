@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import type { Budget } from '../../entities/budget/model/types'
 import type { BudgetInput } from '../../entities/budget/model/types'
 import { BudgetForm } from '../../entities/budget/ui/BudgetForm'
 import { BudgetProgress } from '../../entities/budget/ui/BudgetProgress'
@@ -9,6 +7,7 @@ import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { useUiStore } from '../../shared/store/uiStore'
 import './BudgetsPage.css'
 import '../../shared/ui/form.css'
 
@@ -16,7 +15,9 @@ export function BudgetsPage() {
   const { budgets, addBudget, updateBudget, removeBudget, isPending, isError, refetch } =
     useBudgets()
   const { transactions } = useTransactions()
-  const [editing, setEditing] = useState<Budget | 'new' | null>(null)
+  const editing = useUiStore((state) => state.budgetForm)
+  const openBudgetForm = useUiStore((state) => state.openBudgetForm)
+  const closeBudgetForm = useUiStore((state) => state.closeBudgetForm)
 
   const month = getLatestMonthKey(transactions)
   const usages = calculateBudgetUsage(transactions, budgets, month)
@@ -46,18 +47,22 @@ export function BudgetsPage() {
     } else if (editing) {
       updateBudget(editing.id, input)
     }
-    setEditing(null)
+    closeBudgetForm()
   }
 
   const handleEdit = (usage: BudgetUsage) => {
-    setEditing(usage.budget)
+    openBudgetForm(usage.budget)
   }
 
   return (
     <section>
       <div className="budgets-header">
         <h1 className="page-title">Budgets</h1>
-        <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
+        <button
+          type="button"
+          className="button button--primary"
+          onClick={() => openBudgetForm('new')}
+        >
           Add budget
         </button>
       </div>
@@ -71,7 +76,7 @@ export function BudgetsPage() {
           <button
             type="button"
             className="button button--primary"
-            onClick={() => setEditing('new')}
+            onClick={() => openBudgetForm('new')}
           >
             Add budget
           </button>
@@ -92,13 +97,13 @@ export function BudgetsPage() {
       {editing !== null && (
         <Modal
           title={editing === 'new' ? 'Add budget' : 'Edit budget'}
-          onClose={() => setEditing(null)}
+          onClose={closeBudgetForm}
         >
           <BudgetForm
             initialValue={editing === 'new' ? undefined : editing}
             usedCategories={usedCategories}
             onSubmit={handleSubmit}
-            onCancel={() => setEditing(null)}
+            onCancel={closeBudgetForm}
           />
         </Modal>
       )}

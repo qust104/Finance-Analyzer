@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import type { Transaction } from '../../entities/transaction/model/types'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import {
   applyFilters,
@@ -14,6 +12,7 @@ import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
+import { useUiStore } from '../../shared/store/uiStore'
 import { ImportTransactionsModal } from '../../features/import-transactions/ImportTransactionsModal'
 import './TransactionsPage.css'
 import '../../shared/ui/form.css'
@@ -30,8 +29,12 @@ export function TransactionsPage() {
     refetch,
   } = useTransactions()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
-  const [editing, setEditing] = useState<Transaction | 'new' | null>(null)
-  const [importOpen, setImportOpen] = useState(false)
+  const editing = useUiStore((state) => state.transactionForm)
+  const openTransactionForm = useUiStore((state) => state.openTransactionForm)
+  const closeTransactionForm = useUiStore((state) => state.closeTransactionForm)
+  const importOpen = useUiStore((state) => state.importOpen)
+  const openImportModal = useUiStore((state) => state.openImportModal)
+  const closeImportModal = useUiStore((state) => state.closeImportModal)
 
   const filteredTransactions = applyFilters(transactions, filters)
   const months = getAvailableMonths(transactions)
@@ -42,12 +45,12 @@ export function TransactionsPage() {
     } else if (editing) {
       updateTransaction(editing.id, input)
     }
-    setEditing(null)
+    closeTransactionForm()
   }
 
   const handleImport = (inputs: readonly TransactionInput[]) => {
     addTransactions(inputs)
-    setImportOpen(false)
+    closeImportModal()
   }
 
   const matchesNothing = transactions.length > 0 && filteredTransactions.length === 0
@@ -78,14 +81,14 @@ export function TransactionsPage() {
           <button
             type="button"
             className="button button--secondary"
-            onClick={() => setImportOpen(true)}
+            onClick={openImportModal}
           >
             Import CSV
           </button>
           <button
             type="button"
             className="button button--primary"
-            onClick={() => setEditing('new')}
+            onClick={() => openTransactionForm('new')}
           >
             Add transaction
           </button>
@@ -108,7 +111,7 @@ export function TransactionsPage() {
           <button
             type="button"
             className="button button--primary"
-            onClick={() => setEditing('new')}
+            onClick={() => openTransactionForm('new')}
           >
             Add transaction
           </button>
@@ -126,7 +129,7 @@ export function TransactionsPage() {
         <>
           <TransactionList
             transactions={filteredTransactions}
-            onEdit={setEditing}
+            onEdit={openTransactionForm}
             onDelete={removeTransaction}
           />
           <ul className="transaction-cards">
@@ -134,7 +137,7 @@ export function TransactionsPage() {
               <li key={transaction.id} className="transaction-cards__item">
                 <TransactionCard
                   transaction={transaction}
-                  onEdit={setEditing}
+                  onEdit={openTransactionForm}
                   onDelete={removeTransaction}
                 />
               </li>
@@ -146,12 +149,12 @@ export function TransactionsPage() {
       {editing !== null && (
         <Modal
           title={editing === 'new' ? 'Add transaction' : 'Edit transaction'}
-          onClose={() => setEditing(null)}
+          onClose={closeTransactionForm}
         >
           <TransactionForm
             initialValue={editing === 'new' ? undefined : editing}
             onSubmit={handleSubmit}
-            onCancel={() => setEditing(null)}
+            onCancel={closeTransactionForm}
           />
         </Modal>
       )}
@@ -160,7 +163,7 @@ export function TransactionsPage() {
         <ImportTransactionsModal
           transactions={transactions}
           onImport={handleImport}
-          onClose={() => setImportOpen(false)}
+          onClose={closeImportModal}
         />
       )}
     </section>
