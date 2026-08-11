@@ -1,3 +1,5 @@
+import { reportError } from '../shared/lib/monitoring'
+
 export class ApiError extends Error {
   status: number
 
@@ -10,7 +12,16 @@ export class ApiError extends Error {
 // Every endpoint returns { error: string } on failure.
 // Network boundary code must stay tiny: real work lives in the features.
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, init)
+  let response: Response
+  try {
+    response = await fetch(url, init)
+  } catch (error) {
+    // A failed fetch (offline, unreachable host) throws before the
+    // status check; the query layer shows the ErrorState, and the
+    // monitoring core records the raw cause.
+    reportError(error, `network: ${url}`)
+    throw new ApiError('Network request failed', 0)
+  }
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
@@ -22,6 +33,7 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
     } catch {
       // Non-JSON error body, keep the status fallback message.
     }
+    reportError(new Error(message), `api: ${url}`)
     throw new ApiError(message, response.status)
   }
 
