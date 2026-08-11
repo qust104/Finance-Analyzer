@@ -17,6 +17,10 @@ const REQUIRED_COLUMNS = ['date', 'description', 'amount', 'type', 'category']
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
+// Imported files are untrusted input: without limits a single file could
+// freeze the tab while the synchronous parser walks millions of rows.
+export const MAX_IMPORT_ROWS = 10_000
+
 // CSV exports rarely match our canonical values exactly:
 // "Food", "FOOD", "еда" and "groceries" all mean the same category.
 const CATEGORY_ALIASES: Record<string, Category> = {
@@ -130,6 +134,11 @@ export function transactionFingerprint(transaction: {
 export function buildImportPreview(text: string, existing: readonly Transaction[]): ImportPreview {
   const parsed = parseCsv(text)
   const fileErrors: string[] = []
+
+  if (parsed.rows.length > MAX_IMPORT_ROWS) {
+    fileErrors.push(`The file has too many rows. Maximum is ${MAX_IMPORT_ROWS} rows.`)
+    return { valid: [], invalid: [], duplicates: [], fileErrors }
+  }
 
   if (parsed.headers.length === 0) {
     fileErrors.push('The file is empty or has no header row')

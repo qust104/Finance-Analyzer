@@ -1,13 +1,45 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 import { visualizer } from 'rollup-plugin-visualizer'
+import type { Plugin } from 'vite'
+
+// The mock worker is a service worker, recharts paints with inline
+// style attributes, and everything else is self-hosted. The meta tag
+// only ships in production builds: the dev server relies on inline
+// scripts and a websocket for HMR.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "worker-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+].join('; ')
+
+function injectCspMeta(): Plugin {
+  return {
+    name: 'inject-csp-meta',
+    apply: 'build',
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'meta',
+          attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY },
+          injectTo: 'head-prepend',
+        },
+      ]
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    visualizer({ filename: 'dist/bundle-report.html', open: false }),
-  ],
+  plugins: [react(), injectCspMeta(), visualizer({ filename: 'dist/bundle-report.html', open: false })],
   build: {
     rolldownOptions: {
       output: {

@@ -17,6 +17,7 @@ interface ImportTransactionsModalProps {
 }
 
 const PREVIEW_LIMIT = 10
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 
 export function ImportTransactionsModal({
   transactions,
@@ -28,9 +29,18 @@ export function ImportTransactionsModal({
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    const text = await file.text()
     // Clearing the input lets the user re-pick the same file after an edit.
     event.target.value = ''
+    if (file.size > MAX_IMPORT_BYTES) {
+      setPreview({
+        valid: [],
+        invalid: [],
+        duplicates: [],
+        fileErrors: ['The file is too large. Maximum size is 5 MB.'],
+      })
+      return
+    }
+    const text = await file.text()
     setPreview(buildImportPreview(text, transactions))
   }
 

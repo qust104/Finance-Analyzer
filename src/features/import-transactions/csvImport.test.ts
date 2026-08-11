@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../../entities/transaction/model/types'
 import {
+  MAX_IMPORT_ROWS,
   buildImportPreview,
   normalizeCsvRow,
   parseCsvAmount,
@@ -254,5 +255,19 @@ describe('buildImportPreview', () => {
 
     expect(preview.valid).toHaveLength(1)
     expect(preview.duplicates).toEqual([3])
+  })
+
+  it('rejects files with too many rows', () => {
+    const text = [
+      'date,description,amount,type,category',
+      ...Array.from({ length: MAX_IMPORT_ROWS + 1 }, () => '2026-08-01,A,10,expense,food'),
+    ].join('\n')
+
+    const preview = buildImportPreview(text, [])
+
+    expect(preview.fileErrors).toEqual([
+      `The file has too many rows. Maximum is ${MAX_IMPORT_ROWS} rows.`,
+    ])
+    expect(preview.valid).toEqual([])
   })
 })
