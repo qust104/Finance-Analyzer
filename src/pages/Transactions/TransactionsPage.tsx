@@ -14,6 +14,7 @@ import { Modal } from '../../shared/ui/Modal'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
 import './TransactionsPage.css'
+import '../../shared/ui/form.css'
 
 export function TransactionsPage() {
   const { transactions, addTransaction, updateTransaction, removeTransaction } = useTransactions()

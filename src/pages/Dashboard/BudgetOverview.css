@@ -1,0 +1,24 @@
+.budget-overview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.budget-overview__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4c5fd5;
+  text-decoration: none;
+}
+
+.budget-overview__link:hover {
+  text-decoration: underline;
+}
+
+.budget-overview__empty {
+  margin: 0;
+  padding: 12px 0;
+  color: #82869c;
+  font-size: 14px;
+}

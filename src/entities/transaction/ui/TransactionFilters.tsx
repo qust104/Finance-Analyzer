@@ -3,6 +3,7 @@ import type { TransactionFilters } from '../model/filters'
 import { formatMonthKey } from '../../../shared/lib/format'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
 import './TransactionFilters.css'
+import '../../../shared/ui/form.css'
 
 interface TransactionFiltersProps {
   filters: TransactionFilters

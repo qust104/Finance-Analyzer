@@ -1,4 +1,6 @@
+import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { BudgetOverview } from './BudgetOverview'
 import { CashFlowChart } from './CashFlowChart'
 import { FinancialSummary } from './FinancialSummary'
 import { RecentTransactions } from './RecentTransactions'
@@ -7,6 +9,7 @@ import './DashboardPage.css'
 
 export function DashboardPage() {
   const { transactions } = useTransactions()
+  const { budgets } = useBudgets()
 
   return (
     <section>
@@ -15,6 +18,7 @@ export function DashboardPage() {
       <div className="dashboard-grid">
         <CashFlowChart transactions={transactions} />
         <SpendingByCategory transactions={transactions} />
+        <BudgetOverview transactions={transactions} budgets={budgets} />
         <RecentTransactions transactions={transactions} />
       </div>
     </section>

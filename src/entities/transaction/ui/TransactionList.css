@@ -64,30 +64,6 @@
   color: #d93025;
 }
 
-.action-button {
-  border: 1px solid #d5d7e2;
-  background: #ffffff;
-  color: #3a3e52;
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.action-button:hover {
-  background: #f2f3f7;
-}
-
-.action-button--danger {
-  color: #c0392b;
-}
-
-.action-button--danger:hover {
-  background: #fdf1f0;
-}
-
 .transaction-card {
   background: #ffffff;
   border-radius: 12px;

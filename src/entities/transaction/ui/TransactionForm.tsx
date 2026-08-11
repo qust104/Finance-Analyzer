@@ -6,6 +6,7 @@ import type { TransactionInput } from '../model/repository'
 import { validateTransactionForm } from '../model/validation'
 import type { TransactionFormErrors } from '../model/validation'
 import './TransactionForm.css'
+import '../../../shared/ui/form.css'
 
 interface TransactionFormProps {
   initialValue?: Transaction

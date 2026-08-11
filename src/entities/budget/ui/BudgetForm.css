@@ -1,10 +1,10 @@
-.transaction-form {
+.budget-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.transaction-form__actions {
+.budget-form__actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
