@@ -1,5 +1,7 @@
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { ApiError, request } from '../api/request'
 import { handlers } from './handlers'
 
 const server = setupServer(...handlers)
@@ -89,5 +91,17 @@ describe('mock API', () => {
     })
 
     expect(second.status).toBe(409)
+  })
+
+  it('surfaces an ApiError with the server message on 500', async () => {
+    server.use(
+      http.get(api('/api/transactions').toString(), () =>
+        HttpResponse.json({ error: 'Server exploded' }, { status: 500 }),
+      ),
+    )
+
+    await expect(request(api('/api/transactions').toString())).rejects.toThrow(
+      new ApiError('Server exploded', 500),
+    )
   })
 })
