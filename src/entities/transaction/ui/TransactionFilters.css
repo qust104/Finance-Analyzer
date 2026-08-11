@@ -1,0 +1,26 @@
+.transaction-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.transaction-filters__search {
+  display: block;
+}
+
+.transaction-filters__search input {
+  width: 100%;
+}
+
+.transaction-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.transaction-filters__field {
+  flex: 1;
+  min-width: 140px;
+}
