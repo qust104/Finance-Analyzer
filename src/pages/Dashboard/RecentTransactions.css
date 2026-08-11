@@ -1,0 +1,61 @@
+.recent-transactions__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.recent-transactions__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4c5fd5;
+  text-decoration: none;
+}
+
+.recent-transactions__link:hover {
+  text-decoration: underline;
+}
+
+.recent-transactions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-transactions__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f1f5;
+  font-size: 14px;
+}
+
+.recent-transactions__item:last-child {
+  border-bottom: none;
+}
+
+.recent-transactions__description {
+  flex: 1;
+  font-weight: 600;
+  color: #1c1e26;
+}
+
+.recent-transactions__category {
+  color: #82869c;
+  width: 110px;
+}
+
+.recent-transactions__date {
+  color: #82869c;
+  width: 80px;
+  text-align: right;
+}
+
+.recent-transactions__amount {
+  min-width: 100px;
+  text-align: right;
+  white-space: nowrap;
+}

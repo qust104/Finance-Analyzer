@@ -11,8 +11,8 @@ import { TransactionCard } from '../../entities/transaction/ui/TransactionCard'
 import { TransactionFilters } from '../../entities/transaction/ui/TransactionFilters'
 import { TransactionList } from '../../entities/transaction/ui/TransactionList'
 import { Modal } from '../../shared/ui/Modal'
-import { useTransactions } from './useTransactions'
-import { useTransactionFilters } from './useTransactionFilters'
+import { useTransactions } from '../../shared/hooks/useTransactions'
+import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
 import './TransactionsPage.css'
 
 export function TransactionsPage() {
