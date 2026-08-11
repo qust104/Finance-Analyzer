@@ -32,6 +32,16 @@ export function SpendingByCategory({ transactions }: SpendingByCategoryProps) {
   return (
     <div className="dashboard-card">
       <h2 className="dashboard-card__title">Spending by Category</h2>
+      <div className="sr-only">
+        <p>Spending by category</p>
+        <ul>
+          {data.map((entry) => (
+            <li key={entry.name}>
+              {entry.name}: {formatCurrency(entry.value)} ({formatPercent(entry.percentage)})
+            </li>
+          ))}
+        </ul>
+      </div>
       <div className="spending-by-category">
         <div className="spending-by-category__chart">
           <ResponsiveContainer width="100%" height={220}>

@@ -26,6 +26,10 @@
   box-shadow: 0 12px 32px rgba(15, 18, 30, 0.18);
 }
 
+.modal:focus {
+  outline: none;
+}
+
 .modal__header {
   display: flex;
   align-items: center;

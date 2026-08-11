@@ -27,6 +27,17 @@ export function CashFlowChart({ transactions }: CashFlowChartProps) {
   return (
     <div className="dashboard-card">
       <h2 className="dashboard-card__title">Cash Flow Overview</h2>
+      <div className="sr-only">
+        <p>Cash flow by month</p>
+        <ul>
+          {data.map((item) => (
+            <li key={item.month}>
+              {item.month}: income {formatCurrency(item.income)}, expenses{' '}
+              {formatCurrency(item.expenses)}
+            </li>
+          ))}
+        </ul>
+      </div>
       <div className="cash-flow-chart">
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
