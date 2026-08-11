@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ALL_CATEGORIES } from './types'
+import type { Category } from './types'
 
 // One schema is the single source of truth for validation rules:
 // the transaction form validates through it, and the future API layer
@@ -13,9 +14,14 @@ export const transactionSchema = z.object({
   description: z.string().min(1, { error: 'Description is required' }),
   amount: z.coerce.number().positive({ error: 'Amount must be a positive number' }),
   type: z.enum(['income', 'expense'], { error: 'Type is required' }),
-  category: z.string().refine((value) => (ALL_CATEGORIES as readonly string[]).includes(value), {
-    error: 'Category is required',
-  }),
+  category: z
+    .string()
+    .refine((value) => (ALL_CATEGORIES as readonly string[]).includes(value), {
+      error: 'Category is required',
+    })
+    // The form sends a raw string; the validated output is the domain
+    // type, so the API layer receives a ready TransactionInput.
+    .transform((value) => value as Category),
 })
 
 // Form values are strings because HTML inputs always produce strings;

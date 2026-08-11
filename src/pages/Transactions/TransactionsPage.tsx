@@ -11,6 +11,7 @@ import { TransactionCard } from '../../entities/transaction/ui/TransactionCard'
 import { TransactionFilters } from '../../entities/transaction/ui/TransactionFilters'
 import { TransactionList } from '../../entities/transaction/ui/TransactionList'
 import { Modal } from '../../shared/ui/Modal'
+import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
 import { ImportTransactionsModal } from '../../features/import-transactions/ImportTransactionsModal'
@@ -18,8 +19,16 @@ import './TransactionsPage.css'
 import '../../shared/ui/form.css'
 
 export function TransactionsPage() {
-  const { transactions, addTransaction, addTransactions, updateTransaction, removeTransaction } =
-    useTransactions()
+  const {
+    transactions,
+    addTransaction,
+    addTransactions,
+    updateTransaction,
+    removeTransaction,
+    isPending,
+    isError,
+    refetch,
+  } = useTransactions()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
   const [editing, setEditing] = useState<Transaction | 'new' | null>(null)
   const [importOpen, setImportOpen] = useState(false)
@@ -42,6 +51,24 @@ export function TransactionsPage() {
   }
 
   const matchesNothing = transactions.length > 0 && filteredTransactions.length === 0
+
+  if (isPending) {
+    return (
+      <section>
+        <h1 className="page-title">Transactions</h1>
+        <LoadingState />
+      </section>
+    )
+  }
+
+  if (isError) {
+    return (
+      <section>
+        <h1 className="page-title">Transactions</h1>
+        <ErrorState onRetry={refetch} />
+      </section>
+    )
+  }
 
   return (
     <section>

@@ -1,5 +1,6 @@
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { BudgetOverview } from './BudgetOverview'
 import { CashFlowChart } from './CashFlowChart'
 import { FinancialInsights } from './FinancialInsights'
@@ -9,8 +10,26 @@ import { SpendingByCategory } from './SpendingByCategory'
 import './DashboardPage.css'
 
 export function DashboardPage() {
-  const { transactions } = useTransactions()
-  const { budgets } = useBudgets()
+  const { transactions, isPending, isError, refetch } = useTransactions()
+  const { budgets, isPending: budgetsPending, isError: budgetsError } = useBudgets()
+
+  if (isPending || budgetsPending) {
+    return (
+      <section>
+        <h1 className="page-title">Dashboard</h1>
+        <LoadingState />
+      </section>
+    )
+  }
+
+  if (isError || budgetsError) {
+    return (
+      <section>
+        <h1 className="page-title">Dashboard</h1>
+        <ErrorState onRetry={refetch} />
+      </section>
+    )
+  }
 
   return (
     <section>

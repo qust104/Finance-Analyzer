@@ -6,19 +6,39 @@ import { BudgetProgress } from '../../entities/budget/ui/BudgetProgress'
 import { calculateBudgetUsage, getLatestMonthKey } from '../../analytics/budgets'
 import type { BudgetUsage } from '../../analytics/budgets'
 import { Modal } from '../../shared/ui/Modal'
+import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import './BudgetsPage.css'
 import '../../shared/ui/form.css'
 
 export function BudgetsPage() {
-  const { budgets, addBudget, updateBudget, removeBudget } = useBudgets()
+  const { budgets, addBudget, updateBudget, removeBudget, isPending, isError, refetch } =
+    useBudgets()
   const { transactions } = useTransactions()
   const [editing, setEditing] = useState<Budget | 'new' | null>(null)
 
   const month = getLatestMonthKey(transactions)
   const usages = calculateBudgetUsage(transactions, budgets, month)
   const usedCategories = budgets.map((budget) => budget.category)
+
+  if (isPending) {
+    return (
+      <section>
+        <h1 className="page-title">Budgets</h1>
+        <LoadingState />
+      </section>
+    )
+  }
+
+  if (isError) {
+    return (
+      <section>
+        <h1 className="page-title">Budgets</h1>
+        <ErrorState onRetry={refetch} />
+      </section>
+    )
+  }
 
   const handleSubmit = (input: BudgetInput) => {
     if (editing === 'new') {
