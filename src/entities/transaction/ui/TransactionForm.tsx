@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import type { Category, Transaction } from '../model/types'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import type { SubmitHandler } from 'react-hook-form'
 import type { TransactionInput } from '../model/repository'
-import { validateTransactionForm } from '../model/validation'
-import type { TransactionFormErrors } from '../model/validation'
+import { transactionSchema } from '../model/transactionSchema'
+import type { TransactionFormValues } from '../model/transactionSchema'
+import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
+import type { Category, Transaction } from '../model/types'
 import './TransactionForm.css'
 import '../../../shared/ui/form.css'
 
@@ -15,41 +16,38 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ initialValue, onSubmit, onCancel }: TransactionFormProps) {
-  const [type, setType] = useState<'income' | 'expense'>(initialValue?.type ?? 'expense')
-  const [amount, setAmount] = useState(initialValue ? String(initialValue.amount) : '')
-  const [description, setDescription] = useState(initialValue?.description ?? '')
-  const [category, setCategory] = useState<Category | ''>(initialValue?.category ?? '')
-  const [date, setDate] = useState(initialValue?.date ?? '')
-  const [errors, setErrors] = useState<TransactionFormErrors>({})
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      type: initialValue?.type ?? 'expense',
+      amount: initialValue ? String(initialValue.amount) : '',
+      description: initialValue?.description ?? '',
+      category: initialValue?.category ?? '',
+      date: initialValue?.date ?? '',
+    },
+  })
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    const formErrors = validateTransactionForm({ type, amount, description, category, date })
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors)
-      return
-    }
+  const submit: SubmitHandler<TransactionFormValues> = (values) => {
     onSubmit({
-      type,
-      amount: Number(amount),
-      description: description.trim(),
-      category: category as Category,
-      date,
+      type: values.type,
+      amount: Number(values.amount),
+      description: values.description.trim(),
+      category: values.category as Category,
+      date: values.date,
     })
   }
 
   return (
-    <form className="transaction-form" onSubmit={handleSubmit} noValidate>
+    <form className="transaction-form" onSubmit={handleSubmit(submit)} noValidate>
       <div className="form-field">
         <label className="form-field__label" htmlFor="transaction-type">
           Type
         </label>
-        <select
-          id="transaction-type"
-          className="form-field__control"
-          value={type}
-          onChange={(event) => setType(event.target.value as 'income' | 'expense')}
-        >
+        <select id="transaction-type" className="form-field__control" {...register('type')}>
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
@@ -65,14 +63,13 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
           type="number"
           min="0.01"
           step="0.01"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
+          {...register('amount')}
           aria-invalid={errors.amount ? true : undefined}
           aria-describedby={errors.amount ? 'transaction-amount-error' : undefined}
         />
         {errors.amount && (
           <p id="transaction-amount-error" className="form-field__error">
-            {errors.amount}
+            {errors.amount.message}
           </p>
         )}
       </div>
@@ -85,14 +82,13 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
           id="transaction-description"
           className="form-field__control"
           type="text"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
+          {...register('description')}
           aria-invalid={errors.description ? true : undefined}
           aria-describedby={errors.description ? 'transaction-description-error' : undefined}
         />
         {errors.description && (
           <p id="transaction-description-error" className="form-field__error">
-            {errors.description}
+            {errors.description.message}
           </p>
         )}
       </div>
@@ -104,8 +100,7 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
         <select
           id="transaction-category"
           className="form-field__control"
-          value={category}
-          onChange={(event) => setCategory(event.target.value as Category | '')}
+          {...register('category')}
           aria-invalid={errors.category ? true : undefined}
           aria-describedby={errors.category ? 'transaction-category-error' : undefined}
         >
@@ -118,7 +113,7 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
         </select>
         {errors.category && (
           <p id="transaction-category-error" className="form-field__error">
-            {errors.category}
+            {errors.category.message}
           </p>
         )}
       </div>
@@ -131,14 +126,13 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
           id="transaction-date"
           className="form-field__control"
           type="date"
-          value={date}
-          onChange={(event) => setDate(event.target.value)}
+          {...register('date')}
           aria-invalid={errors.date ? true : undefined}
           aria-describedby={errors.date ? 'transaction-date-error' : undefined}
         />
         {errors.date && (
           <p id="transaction-date-error" className="form-field__error">
-            {errors.date}
+            {errors.date.message}
           </p>
         )}
       </div>

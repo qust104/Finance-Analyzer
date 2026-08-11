@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import type { Budget } from '../model/types'
-import type { BudgetInput } from '../model/types'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import type { SubmitHandler } from 'react-hook-form'
+import { budgetSchema } from '../model/budgetSchema'
+import type { BudgetFormValues } from '../model/budgetSchema'
+import type { Budget, BudgetInput } from '../model/types'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '../../transaction/model/types'
 import type { Category } from '../../transaction/model/types'
 import './BudgetForm.css'
@@ -16,36 +18,33 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }: BudgetFormProps) {
-  const [category, setCategory] = useState<Category | ''>(initialValue?.category ?? '')
-  const [amount, setAmount] = useState(initialValue ? String(initialValue.amount) : '')
-  const [error, setError] = useState<{ category?: string; amount?: string }>({})
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<BudgetFormValues>({
+    resolver: zodResolver(budgetSchema),
+    defaultValues: {
+      category: initialValue?.category ?? '',
+      amount: initialValue ? String(initialValue.amount) : '',
+      period: 'monthly',
+    },
+  })
 
   const availableCategories = ALL_CATEGORIES.filter(
     (item) => !usedCategories.includes(item) || item === initialValue?.category,
   )
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    const nextError: { category?: string; amount?: string } = {}
-
-    if (category === '') {
-      nextError.category = 'Category is required'
-    }
-    const numericAmount = Number(amount)
-    if (amount.trim() === '' || !Number.isFinite(numericAmount) || numericAmount <= 0) {
-      nextError.amount = 'Amount must be a positive number'
-    }
-
-    if (Object.keys(nextError).length > 0) {
-      setError(nextError)
-      return
-    }
-
-    onSubmit({ category: category as Category, amount: numericAmount, period: 'monthly' })
+  const submit: SubmitHandler<BudgetFormValues> = (values) => {
+    onSubmit({
+      category: values.category as Category,
+      amount: Number(values.amount),
+      period: 'monthly',
+    })
   }
 
   return (
-    <form className="budget-form" onSubmit={handleSubmit} noValidate>
+    <form className="budget-form" onSubmit={handleSubmit(submit)} noValidate>
       <div className="form-field">
         <label className="form-field__label" htmlFor="budget-category">
           Category
@@ -53,11 +52,10 @@ export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }:
         <select
           id="budget-category"
           className="form-field__control"
-          value={category}
-          onChange={(event) => setCategory(event.target.value as Category | '')}
+          {...register('category')}
           disabled={initialValue !== undefined}
-          aria-invalid={error.category ? true : undefined}
-          aria-describedby={error.category ? 'budget-category-error' : undefined}
+          aria-invalid={errors.category ? true : undefined}
+          aria-describedby={errors.category ? 'budget-category-error' : undefined}
         >
           <option value="">Select category</option>
           {availableCategories.map((item) => (
@@ -66,9 +64,9 @@ export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }:
             </option>
           ))}
         </select>
-        {error.category && (
+        {errors.category && (
           <p id="budget-category-error" className="form-field__error">
-            {error.category}
+            {errors.category.message}
           </p>
         )}
       </div>
@@ -83,14 +81,13 @@ export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }:
           type="number"
           min="1"
           step="0.01"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          aria-invalid={error.amount ? true : undefined}
-          aria-describedby={error.amount ? 'budget-amount-error' : undefined}
+          {...register('amount')}
+          aria-invalid={errors.amount ? true : undefined}
+          aria-describedby={errors.amount ? 'budget-amount-error' : undefined}
         />
-        {error.amount && (
+        {errors.amount && (
           <p id="budget-amount-error" className="form-field__error">
-            {error.amount}
+            {errors.amount.message}
           </p>
         )}
       </div>
