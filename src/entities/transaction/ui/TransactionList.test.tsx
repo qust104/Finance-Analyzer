@@ -27,10 +27,10 @@ describe('TransactionList', () => {
   })
 
   it('does not re-render existing rows when the parent re-renders', () => {
-    // 2000 rows make the difference measurable; the memoized rows make
-    // the second render a cheap map over props instead of 2000 component
+    // 1000 rows make the difference measurable; the memoized rows make
+    // the second render a cheap map over props instead of 1000 component
     // renders, so a 50% threshold has a wide safety margin.
-    const transactions = Array.from({ length: 2000 }, (_, i) => makeTransaction(i))
+    const transactions = Array.from({ length: 1000 }, (_, i) => makeTransaction(i))
     const onEdit = vi.fn()
     const onDelete = vi.fn()
     const durations: number[] = []

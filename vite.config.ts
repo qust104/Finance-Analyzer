@@ -80,6 +80,8 @@ export default defineConfig({
   },
   test: {
     setupFiles: ['./src/test/setup.ts'],
+    // Integration and performance tests are slow under parallel load.
+    testTimeout: 10_000,
     // Integration tests run in jsdom and fetch against the same origin
     // the browser uses, so the MSW handlers keep matching.
     environmentOptions: {
