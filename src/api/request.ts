@@ -9,12 +9,22 @@ export class ApiError extends Error {
   }
 }
 
+// The app is served from a sub-path on GitHub Pages while the mock
+// worker only intercepts requests inside its scope, so relative paths
+// must be prefixed with the deployment base ("/Finance-Analyzer/").
+export function resolveUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) {
+    return url
+  }
+  return import.meta.env.BASE_URL + url.replace(/^\//, '')
+}
+
 // Every endpoint returns { error: string } on failure.
 // Network boundary code must stay tiny: real work lives in the features.
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response
   try {
-    response = await fetch(url, init)
+    response = await fetch(resolveUrl(url), init)
   } catch (error) {
     // A failed fetch (offline, unreachable host) throws before the
     // status check; the query layer shows the ErrorState, and the

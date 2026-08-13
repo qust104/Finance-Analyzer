@@ -17,7 +17,6 @@ const CONTENT_SECURITY_POLICY = [
   "worker-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
-  "frame-ancestors 'self'",
   "form-action 'self'",
 ].join('; ')
 

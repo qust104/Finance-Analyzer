@@ -14,7 +14,12 @@ import { transactionSchema } from '../entities/transaction/model/transactionSche
 
 // Node has no location, so relative paths never match in tests;
 // the browser resolves "window.location.origin" to the same base.
-export const API_BASE = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+// The deployment base ("" in dev, "/Finance-Analyzer" on Pages) must
+// match the URLs the API layer sends, or the worker scope mismatch
+// would send requests to the network instead of the mock backend.
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+export const API_BASE =
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost') + basePath
 
 // The mock backend is the server side of the app: it keeps working
 // against the same localStorage storage layer and hands out data
