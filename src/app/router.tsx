@@ -1,10 +1,13 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './layouts/AppLayout'
+import { LoadingState } from '../shared/ui/AsyncStates'
 
 // The app is served from a sub-path on GitHub Pages; BASE_URL is '/'
 // in dev and '/Finance-Analyzer/' in production builds.
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
 
+// Shown while the lazy route module is loading on the first render;
+// the router warns about its absence otherwise.
 export const router = createBrowserRouter(
   [
     {
@@ -18,6 +21,7 @@ export const router = createBrowserRouter(
             import('../pages/Dashboard/DashboardPage').then((m) => ({
               Component: m.DashboardPage,
             })),
+          hydrateFallbackElement: <LoadingState />,
         },
         {
           path: 'transactions',
@@ -25,6 +29,7 @@ export const router = createBrowserRouter(
             import('../pages/Transactions/TransactionsPage').then((m) => ({
               Component: m.TransactionsPage,
             })),
+          hydrateFallbackElement: <LoadingState />,
         },
         {
           path: 'analytics',
@@ -32,6 +37,7 @@ export const router = createBrowserRouter(
             import('../pages/Analytics/AnalyticsPage').then((m) => ({
               Component: m.AnalyticsPage,
             })),
+          hydrateFallbackElement: <LoadingState />,
         },
         {
           path: 'budgets',
@@ -39,6 +45,7 @@ export const router = createBrowserRouter(
             import('../pages/Budgets/BudgetsPage').then((m) => ({
               Component: m.BudgetsPage,
             })),
+          hydrateFallbackElement: <LoadingState />,
         },
         {
           path: 'settings',
@@ -46,6 +53,7 @@ export const router = createBrowserRouter(
             import('../pages/Settings/SettingsPage').then((m) => ({
               Component: m.SettingsPage,
             })),
+          hydrateFallbackElement: <LoadingState />,
         },
       ],
     },
