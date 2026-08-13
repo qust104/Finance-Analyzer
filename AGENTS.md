@@ -37,7 +37,9 @@ Personal finance SPA: React 19 + TypeScript + Vite 8 (Rolldown). No real backend
 
 ## Gotchas
 
-- MSW in production is intentional: the mock worker IS the backend infra (see `main.tsx` comment)
+- MSW is intentional only in dev/tests: production runs the "server" inline — `handleLocalRequest` in `src/api/local.ts` (shared with `src/mocks/handlers.ts`, which delegates into it). No service worker in prod builds; `main.tsx` starts the worker only when `!import.meta.env.PROD`
+- The worker only intercepts requests inside its scope: API paths and MSW handlers must both be prefixed with the deployment base (`resolveUrl` in `src/api/request.ts`, `API_BASE` in `src/mocks/handlers.ts`)
+- GitHub Pages CDN caches everything for 10 min (`max-age=600`) — a fresh deploy briefly 404s old asset URLs; a hard reload fixes it. The deploy workflow caches `dist` so old hashed assets survive deploys
 - RTL needs `afterEach(cleanup)` — already set in `src/test/setup.ts`
 - `PromiseRejectionEvent` in jsdom requires the `promise` init property
 - jsdom URL is `http://localhost` so MSW handlers match in tests

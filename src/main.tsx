@@ -14,13 +14,18 @@ const queryClient = new QueryClient()
 initGlobalErrorReporting()
 
 async function mount() {
-  try {
-    const { worker } = await import('./mocks/browser')
-    await worker.start({ onUnhandledRequest: 'bypass' })
-  } catch {
-    // If the worker cannot start (private browsing, blocked service
-    // worker registration) the app still mounts: requests fail and
-    // the error states take over instead of a blank screen.
+  // In production the API runs inline (src/api/local.ts): no service
+  // worker, no network round trip, so the app works on every first
+  // visit. Dev and tests keep the MSW worker as the network layer.
+  if (!import.meta.env.PROD) {
+    try {
+      const { worker } = await import('./mocks/browser')
+      await worker.start({ onUnhandledRequest: 'bypass' })
+    } catch {
+      // If the worker cannot start (private browsing, blocked service
+      // worker registration) the app still mounts: requests fail and
+      // the error states take over instead of a blank screen.
+    }
   }
 
   createRoot(document.getElementById('root')!).render(

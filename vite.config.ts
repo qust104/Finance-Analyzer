@@ -39,6 +39,12 @@ function injectCspMeta(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), injectCspMeta(), visualizer({ filename: 'dist/bundle-report.html', open: false })],
+  server: {
+    // Bind to IPv4 loopback: the default IPv6-only listener ("::1")
+    // breaks the HMR websocket on setups where localhost resolves to
+    // 127.0.0.1 or a proxy/firewall chokes on IPv6 upgrades.
+    host: '127.0.0.1',
+  },
   build: {
     rolldownOptions: {
       output: {

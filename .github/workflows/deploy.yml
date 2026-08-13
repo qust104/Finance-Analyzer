@@ -26,7 +26,26 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test
+      - name: Restore previous dist
+        uses: actions/cache/restore@v4
+        with:
+          path: dist-prev
+          key: dist-artifacts-${{ runner.os }}
       - run: npm run build -- --base=/Finance-Analyzer/
+      # Keep hashed assets from previous deploys: cached index.html
+      # files keep loading their own assets until the Pages CDN cache
+      # (max-age=600) expires, so visitors never hit a blank 404 window.
+      - name: Keep previous assets
+        shell: bash
+        run: |
+          if [ -d dist-prev/assets ]; then
+            cp -rn dist-prev/assets/* dist/assets/ || true
+          fi
+      - name: Store dist for next run
+        uses: actions/cache/save@v4
+        with:
+          path: dist
+          key: dist-artifacts-${{ runner.os }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

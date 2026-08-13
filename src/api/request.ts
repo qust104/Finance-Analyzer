@@ -1,4 +1,5 @@
 import { reportError } from '../shared/lib/monitoring'
+import { handleLocalRequest, type LocalResponse } from './local'
 
 export class ApiError extends Error {
   status: number
@@ -19,12 +20,36 @@ export function resolveUrl(url: string): string {
   return import.meta.env.BASE_URL + url.replace(/^\//, '')
 }
 
+function throwAsApiError(url: string, result: LocalResponse): never {
+  const body = result.body as { error?: unknown } | undefined
+  const message =
+    typeof body?.error === 'string'
+      ? body.error
+      : `Request failed with status ${result.status}`
+  reportError(new Error(message), `api: ${url}`)
+  throw new ApiError(message, result.status)
+}
+
 // Every endpoint returns { error: string } on failure.
-// Network boundary code must stay tiny: real work lives in the features.
+// In production the "server" runs inline (no network, no worker);
+// dev and tests hit the real fetch path intercepted by MSW.
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const resolved = resolveUrl(url)
+
+  if (import.meta.env.PROD) {
+    const result = handleLocalRequest(resolved, init)
+    if (result.status < 200 || result.status >= 300) {
+      throwAsApiError(url, result)
+    }
+    if (result.status === 204) {
+      return undefined as T
+    }
+    return result.body as T
+  }
+
   let response: Response
   try {
-    response = await fetch(resolveUrl(url), init)
+    response = await fetch(resolved, init)
   } catch (error) {
     // A failed fetch (offline, unreachable host) throws before the
     // status check; the query layer shows the ErrorState, and the
