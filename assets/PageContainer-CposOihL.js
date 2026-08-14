@@ -1,0 +1,1 @@
+import{m as e}from"./vendor-react-C2MaTb6o.js";var t=e();function n({title:e,children:n}){return(0,t.jsxs)(`section`,{children:[(0,t.jsx)(`h1`,{className:`page-title`,children:e}),n]})}export{n as t};

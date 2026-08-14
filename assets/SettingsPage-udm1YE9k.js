@@ -1,0 +1,1 @@
+import{m as e}from"./vendor-react-C2MaTb6o.js";import{t}from"./PageContainer-CposOihL.js";var n=e();function r(){return(0,n.jsx)(t,{title:`Settings`})}export{r as SettingsPage};
