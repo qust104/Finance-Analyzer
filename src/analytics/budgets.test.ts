@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Budget } from '../entities/budget/model/types'
 import type { Transaction } from '../entities/transaction/model/types'
-import { calculateBudgetUsage, getLatestMonthKey } from './budgets'
+import {
+  calculateBudgetUsage,
+  getCurrentMonthKey,
+  getLatestMonthWithData,
+  resolveReportMonth,
+} from './budgets'
 
 // Vitest runs in Node, so a process object exists at runtime even
 // though tsconfig.app.json only lists DOM types.
@@ -87,29 +92,83 @@ describe('calculateBudgetUsage', () => {
   })
 })
 
-describe('getLatestMonthKey', () => {
+describe('getCurrentMonthKey', () => {
+  it('returns the month of the reference date in local time', () => {
+    expect(getCurrentMonthKey(new Date(2026, 7, 1))).toBe('2026-08')
+    expect(getCurrentMonthKey(new Date(2026, 11, 31))).toBe('2026-12')
+    expect(getCurrentMonthKey(new Date(2026, 0, 15))).toBe('2026-01')
+  })
+
+  it('defaults to the current calendar month', () => {
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    expect(getCurrentMonthKey()).toBe(currentMonth)
+  })
+
+  it('stays on the local month at month start in a UTC+X timezone', () => {
+    const originalTimezone = process.env.TZ
+    process.env.TZ = 'Asia/Vladivostok'
+    try {
+      // 00:30 local is still "yesterday" in UTC: a UTC-based slice
+      // would fall back to the previous month.
+      const justAfterMidnight = new Date(2026, 7, 1, 0, 30)
+      expect(getCurrentMonthKey(justAfterMidnight)).toBe('2026-08')
+    } finally {
+      process.env.TZ = originalTimezone
+    }
+  })
+})
+
+describe('getLatestMonthWithData', () => {
   it('returns the most recent month present in the data', () => {
     const transactions = [
       transaction({ date: '2026-06-01' }),
       transaction({ date: '2026-08-01' }),
       transaction({ date: '2026-07-01' }),
     ]
-    expect(getLatestMonthKey(transactions)).toBe('2026-08')
+    expect(getLatestMonthWithData(transactions)).toBe('2026-08')
   })
 
-  it('falls back to the current calendar month for an empty dataset', () => {
-    const now = new Date()
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-    expect(getLatestMonthKey([])).toBe(currentMonth)
+  it('returns null when there is no data at all', () => {
+    expect(getLatestMonthWithData([])).toBeNull()
+  })
+})
+
+describe('resolveReportMonth', () => {
+  const referenceDate = new Date(2026, 7, 16)
+
+  it('uses the current month when it has data', () => {
+    const transactions = [transaction({ date: '2026-08-05' }), transaction({ date: '2026-07-20' })]
+    expect(resolveReportMonth(transactions, referenceDate)).toEqual({
+      month: '2026-08',
+      isFallback: false,
+      hasAnyData: true,
+    })
   })
 
-  it('uses the local calendar month, not UTC, for an empty dataset', () => {
+  it('falls back to the latest month with data and flags it', () => {
+    const transactions = [transaction({ date: '2026-07-20' })]
+    expect(resolveReportMonth(transactions, referenceDate)).toEqual({
+      month: '2026-07',
+      isFallback: true,
+      hasAnyData: true,
+    })
+  })
+
+  it('uses the current month with hasAnyData=false when there is no data', () => {
+    expect(resolveReportMonth([], referenceDate)).toEqual({
+      month: '2026-08',
+      isFallback: false,
+      hasAnyData: false,
+    })
+  })
+
+  it('keeps the current month even at the UTC boundary near month start', () => {
     const originalTimezone = process.env.TZ
     process.env.TZ = 'Asia/Vladivostok'
     try {
-      const now = new Date()
-      const localMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-      expect(getLatestMonthKey([])).toBe(localMonth)
+      const boundary = new Date(2026, 7, 1, 0, 30)
+      expect(resolveReportMonth([], boundary).month).toBe('2026-08')
     } finally {
       process.env.TZ = originalTimezone
     }

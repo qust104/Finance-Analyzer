@@ -5,7 +5,7 @@ import {
   calculateTotalExpenses,
   calculateTotalIncome,
 } from '../analytics/calculations'
-import { getLatestMonthKey } from '../analytics/budgets'
+import { resolveReportMonth } from '../analytics/budgets'
 import { generateInsights } from '../analytics/insights'
 import { createLocalStorageBudgetRepository } from '../entities/budget/model/budgetRepository'
 import { createLocalStorageTransactionRepository } from '../entities/transaction/model/repository'
@@ -135,7 +135,7 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
 
   if (isAnalytics && method === 'GET') {
     const all = transactions.getAll()
-    const month = getLatestMonthKey(all)
+    const month = resolveReportMonth(all).month
     return {
       status: 200,
       body: {

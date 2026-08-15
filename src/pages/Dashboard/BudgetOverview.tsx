@@ -1,9 +1,11 @@
 import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { calculateBudgetUsage, getLatestMonthKey } from '../../analytics/budgets'
+import { calculateBudgetUsage } from '../../analytics/budgets'
 import type { Budget } from '../../entities/budget/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 import { BudgetProgress } from '../../entities/budget/ui/BudgetProgress'
+import { useReportMonth } from '../../shared/hooks/useReportMonth'
+import { ReportMonthBanner } from '../../shared/ui/ReportMonthBanner'
 import './BudgetOverview.css'
 
 interface BudgetOverviewProps {
@@ -15,10 +17,11 @@ export const BudgetOverview = memo(function BudgetOverview({
   transactions,
   budgets,
 }: BudgetOverviewProps) {
-  const usages = useMemo(() => {
-    const month = getLatestMonthKey(transactions)
-    return calculateBudgetUsage(transactions, budgets, month)
-  }, [transactions, budgets])
+  const { month, isFallback } = useReportMonth(transactions)
+  const usages = useMemo(
+    () => calculateBudgetUsage(transactions, budgets, month),
+    [transactions, budgets, month],
+  )
 
   return (
     <div className="dashboard-card">
@@ -28,6 +31,8 @@ export const BudgetOverview = memo(function BudgetOverview({
           Manage
         </Link>
       </div>
+
+      {isFallback && <ReportMonthBanner month={month} />}
 
       {usages.length === 0 ? (
         <p className="budget-overview__empty">

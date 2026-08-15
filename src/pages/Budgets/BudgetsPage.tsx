@@ -1,14 +1,15 @@
 import type { BudgetInput } from '../../entities/budget/model/types'
 import { BudgetForm } from '../../entities/budget/ui/BudgetForm'
 import { BudgetProgress } from '../../entities/budget/ui/BudgetProgress'
-import { calculateBudgetUsage, getLatestMonthKey } from '../../analytics/budgets'
+import { calculateBudgetUsage } from '../../analytics/budgets'
 import type { BudgetUsage } from '../../analytics/budgets'
 import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
+import { ReportMonthBanner } from '../../shared/ui/ReportMonthBanner'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { useReportMonth } from '../../shared/hooks/useReportMonth'
 import { useUiStore } from '../../shared/store/uiStore'
-import { formatMonthKey } from '../../shared/lib/format'
 import './BudgetsPage.css'
 import '../../shared/ui/form.css'
 
@@ -20,7 +21,7 @@ export function BudgetsPage() {
   const openBudgetForm = useUiStore((state) => state.openBudgetForm)
   const closeBudgetForm = useUiStore((state) => state.closeBudgetForm)
 
-  const month = getLatestMonthKey(transactions)
+  const { month, isFallback } = useReportMonth(transactions)
   const usages = calculateBudgetUsage(transactions, budgets, month)
   const usedCategories = budgets.map((budget) => budget.category)
 
@@ -58,10 +59,7 @@ export function BudgetsPage() {
   return (
     <section>
       <div className="budgets-header">
-        <div>
-          <h1 className="page-title">Budgets</h1>
-          <p className="budgets-month">Report month: {formatMonthKey(month)}</p>
-        </div>
+        <h1 className="page-title">Budgets</h1>
         <button
           type="button"
           className="button button--primary"
@@ -70,6 +68,8 @@ export function BudgetsPage() {
           Add budget
         </button>
       </div>
+
+      {isFallback && <ReportMonthBanner month={month} />}
 
       {budgets.length === 0 ? (
         <div className="empty-state">

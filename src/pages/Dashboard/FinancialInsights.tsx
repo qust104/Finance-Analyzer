@@ -1,9 +1,10 @@
 import { memo, useMemo } from 'react'
 import { generateInsights } from '../../analytics/insights'
 import type { Insight } from '../../analytics/insights'
-import { getLatestMonthKey } from '../../analytics/budgets'
 import type { Budget } from '../../entities/budget/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
+import { useReportMonth } from '../../shared/hooks/useReportMonth'
+import { ReportMonthBanner } from '../../shared/ui/ReportMonthBanner'
 import './FinancialInsights.css'
 
 interface FinancialInsightsProps {
@@ -21,14 +22,16 @@ export const FinancialInsights = memo(function FinancialInsights({
   transactions,
   budgets,
 }: FinancialInsightsProps) {
-  const insights = useMemo(() => {
-    const month = getLatestMonthKey(transactions)
-    return generateInsights(transactions, budgets, month)
-  }, [transactions, budgets])
+  const { month, isFallback } = useReportMonth(transactions)
+  const insights = useMemo(
+    () => generateInsights(transactions, budgets, month),
+    [transactions, budgets, month],
+  )
 
   return (
     <div className="dashboard-card">
       <h2 className="dashboard-card__title">Financial Insights</h2>
+      {isFallback && <ReportMonthBanner month={month} />}
       {insights.length === 0 ? (
         <p className="insights-empty">All quiet — nothing needs your attention right now.</p>
       ) : (
