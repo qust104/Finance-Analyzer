@@ -121,8 +121,12 @@ export function normalizeCsvRow(cells: string[], headers: string[]): NormalizeRo
   }
 }
 
-// Same date, amount and description must not land in the store twice,
-// whether the duplicate lives in the CSV or already exists locally.
+// Same date, amount and description are too coarse to tell a repeated
+// purchase (two coffees a day) from a duplicate import of the same file.
+// Rows are deduplicated by quota instead of a plain set: a file may keep
+// as many copies of a fingerprint as it has more of them than the store
+// already holds, so a fresh file imports legitimate repeats in full while
+// re-importing the same file adds nothing.
 export function transactionFingerprint(transaction: {
   date: string
   amount: number
@@ -152,26 +156,52 @@ export function buildImportPreview(text: string, existing: readonly Transaction[
     return { valid: [], invalid: [], duplicates: [], fileErrors }
   }
 
-  const seen = new Set(existing.map((transaction) => transactionFingerprint(transaction)))
+  const normalized = parsed.rows.map((entry) => ({
+    row: entry.row,
+    result: normalizeCsvRow(entry.cells, parsed.headers),
+  }))
+
+  const fileCount = new Map<string, number>()
+  for (const { result } of normalized) {
+    if (result.ok) {
+      const fingerprint = transactionFingerprint(result.value)
+      fileCount.set(fingerprint, (fileCount.get(fingerprint) ?? 0) + 1)
+    }
+  }
+
+  const existingCount = new Map<string, number>()
+  for (const transaction of existing) {
+    const fingerprint = transactionFingerprint(transaction)
+    existingCount.set(fingerprint, (existingCount.get(fingerprint) ?? 0) + 1)
+  }
+
   const valid: TransactionInput[] = []
   const invalid = parsed.structuralErrors.map((error) => ({
     row: error.row,
     errors: [error.message],
   }))
   const duplicates: number[] = []
+  const acceptedCount = new Map<string, number>()
 
-  for (const entry of parsed.rows) {
-    const result = normalizeCsvRow(entry.cells, parsed.headers)
+  for (const { row, result } of normalized) {
     if (!result.ok) {
-      invalid.push({ row: entry.row, errors: result.errors })
+      invalid.push({ row, errors: result.errors })
       continue
     }
+    // The quota is how many copies the file holds beyond what the store
+    // already has: copies within that quota are real data, the rest are
+    // a second run of the same import.
     const fingerprint = transactionFingerprint(result.value)
-    if (seen.has(fingerprint)) {
-      duplicates.push(entry.row)
+    const quota = Math.max(
+      (fileCount.get(fingerprint) ?? 0) - (existingCount.get(fingerprint) ?? 0),
+      0,
+    )
+    const accepted = acceptedCount.get(fingerprint) ?? 0
+    if (accepted >= quota) {
+      duplicates.push(row)
       continue
     }
-    seen.add(fingerprint)
+    acceptedCount.set(fingerprint, accepted + 1)
     valid.push(result.value)
   }
 

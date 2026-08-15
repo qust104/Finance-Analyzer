@@ -222,9 +222,11 @@ describe('buildImportPreview', () => {
 
     const preview = buildImportPreview(text, existing)
 
-    expect(preview.valid).toHaveLength(1)
-    expect(preview.valid[0]?.description).toBe('Pyaterochka')
-    expect(preview.duplicates).toEqual([2, 5])
+    // Salary already exists locally, so the file copy is a duplicate,
+    // while both Pyaterochka rows are legitimate purchases.
+    expect(preview.valid).toHaveLength(2)
+    expect(preview.valid.map((row) => row.description)).toEqual(['Pyaterochka', 'Pyaterochka'])
+    expect(preview.duplicates).toEqual([2])
     expect(preview.invalid).toEqual([
       { row: 4, errors: ['Amount must be a positive number', 'Unknown category'] },
     ])
@@ -244,7 +246,7 @@ describe('buildImportPreview', () => {
     expect(preview.fileErrors).toEqual(['The file is empty or has no header row'])
   })
 
-  it('allows re-importing the same valid row twice in one file', () => {
+  it('imports legitimate identical rows within one file', () => {
     const text = [
       'date,description,amount,type,category',
       '2026-08-01,A,10,expense,food',
@@ -253,8 +255,40 @@ describe('buildImportPreview', () => {
 
     const preview = buildImportPreview(text, [])
 
-    expect(preview.valid).toHaveLength(1)
-    expect(preview.duplicates).toEqual([3])
+    expect(preview.valid).toHaveLength(2)
+    expect(preview.duplicates).toEqual([])
+  })
+
+  it('flags a re-import of the same file as duplicates', () => {
+    const text = [
+      'date,description,amount,type,category',
+      '2026-08-01,A,10,expense,food',
+      '2026-08-01,A,10,expense,food',
+    ].join('\n')
+
+    const alreadyImported: Transaction[] = [
+      {
+        id: '1',
+        date: '2026-08-01',
+        amount: 10,
+        type: 'expense',
+        category: 'food',
+        description: 'A',
+      },
+      {
+        id: '2',
+        date: '2026-08-01',
+        amount: 10,
+        type: 'expense',
+        category: 'food',
+        description: 'A',
+      },
+    ]
+
+    const preview = buildImportPreview(text, alreadyImported)
+
+    expect(preview.valid).toEqual([])
+    expect(preview.duplicates).toEqual([2, 3])
   })
 
   it('rejects files with too many rows', () => {

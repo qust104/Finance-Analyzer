@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../entities/transaction/model/types'
 import {
-  calculateAverageDailySpending,
   calculateBalance,
   calculateCategoryStats,
   calculateLargestExpense,
@@ -147,30 +146,6 @@ describe('calculateMonthlyStats', () => {
   })
 })
 
-describe('calculateAverageDailySpending', () => {
-  it('divides monthly expenses by the number of days in the month', () => {
-    const transactions = [
-      fixture({ id: 'a', date: '2026-08-05', type: 'expense', amount: 100 }),
-      fixture({ id: 'b', date: '2026-08-20', type: 'expense', amount: 200 }),
-    ]
-    expect(calculateAverageDailySpending(transactions, '2026-08')).toBe(round2(300 / 31))
-  })
-
-  it('ignores income transactions', () => {
-    const transactions = [fixture({ id: 'a', date: '2026-08-01', type: 'income', amount: 1000 })]
-    expect(calculateAverageDailySpending(transactions, '2026-08')).toBe(0)
-  })
-
-  it('returns 0 for a month without expenses', () => {
-    expect(calculateAverageDailySpending(EMPTY, '2026-08')).toBe(0)
-  })
-
-  it('returns 0 for a malformed month', () => {
-    const transactions = [fixture({ id: 'a', type: 'expense', amount: 500 })]
-    expect(calculateAverageDailySpending(transactions, 'not-a-month')).toBe(0)
-  })
-})
-
 describe('calculateLargestExpense', () => {
   it('returns the expense with the highest amount', () => {
     const transactions = [
@@ -195,7 +170,3 @@ describe('calculateLargestExpense', () => {
     expect(calculateLargestExpense(EMPTY)).toBeNull()
   })
 })
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100
-}

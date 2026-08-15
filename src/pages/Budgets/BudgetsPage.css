@@ -9,6 +9,12 @@
   margin-bottom: 0;
 }
 
+.budgets-month {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #82869c;
+}
+
 .budget-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

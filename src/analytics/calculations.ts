@@ -91,32 +91,6 @@ export function calculateMonthlyStats(transactions: readonly Transaction[]): Mon
     .sort((a, b) => a.month.localeCompare(b.month))
 }
 
-export function calculateAverageDailySpending(
-  transactions: readonly Transaction[],
-  month: string,
-): number {
-  const expenses = transactions
-    .filter((transaction) => transaction.type === 'expense' && transaction.date.startsWith(month))
-    .reduce((sum, transaction) => sum + transaction.amount, 0)
-
-  if (expenses === 0) {
-    return 0
-  }
-
-  const [year, monthIndex] = month.split('-').map(Number)
-  if (
-    !Number.isInteger(year) ||
-    !Number.isInteger(monthIndex) ||
-    monthIndex < 1 ||
-    monthIndex > 12
-  ) {
-    return 0
-  }
-
-  const daysInMonth = new Date(year, monthIndex, 0).getDate()
-  return roundTo(expenses / daysInMonth, 2)
-}
-
 export function calculateLargestExpense(transactions: readonly Transaction[]): Transaction | null {
   let largest: Transaction | null = null
 

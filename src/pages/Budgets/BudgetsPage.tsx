@@ -8,6 +8,7 @@ import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useUiStore } from '../../shared/store/uiStore'
+import { formatMonthKey } from '../../shared/lib/format'
 import './BudgetsPage.css'
 import '../../shared/ui/form.css'
 
@@ -57,7 +58,10 @@ export function BudgetsPage() {
   return (
     <section>
       <div className="budgets-header">
-        <h1 className="page-title">Budgets</h1>
+        <div>
+          <h1 className="page-title">Budgets</h1>
+          <p className="budgets-month">Report month: {formatMonthKey(month)}</p>
+        </div>
         <button
           type="button"
           className="button button--primary"
@@ -95,10 +99,7 @@ export function BudgetsPage() {
       )}
 
       {editing !== null && (
-        <Modal
-          title={editing === 'new' ? 'Add budget' : 'Edit budget'}
-          onClose={closeBudgetForm}
-        >
+        <Modal title={editing === 'new' ? 'Add budget' : 'Edit budget'} onClose={closeBudgetForm}>
           <BudgetForm
             initialValue={editing === 'new' ? undefined : editing}
             usedCategories={usedCategories}
