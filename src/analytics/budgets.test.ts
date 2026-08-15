@@ -3,6 +3,10 @@ import type { Budget } from '../entities/budget/model/types'
 import type { Transaction } from '../entities/transaction/model/types'
 import { calculateBudgetUsage, getLatestMonthKey } from './budgets'
 
+// Vitest runs in Node, so a process object exists at runtime even
+// though tsconfig.app.json only lists DOM types.
+declare const process: { env: Record<string, string | undefined> }
+
 const transaction = (overrides: Partial<Transaction> = {}): Transaction => ({
   id: '1',
   date: '2026-08-05',
@@ -93,8 +97,21 @@ describe('getLatestMonthKey', () => {
     expect(getLatestMonthKey(transactions)).toBe('2026-08')
   })
 
-  it('falls back to the current month for an empty dataset', () => {
-    const currentMonth = new Date().toISOString().slice(0, 7)
+  it('falls back to the current calendar month for an empty dataset', () => {
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     expect(getLatestMonthKey([])).toBe(currentMonth)
+  })
+
+  it('uses the local calendar month, not UTC, for an empty dataset', () => {
+    const originalTimezone = process.env.TZ
+    process.env.TZ = 'Asia/Vladivostok'
+    try {
+      const now = new Date()
+      const localMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      expect(getLatestMonthKey([])).toBe(localMonth)
+    } finally {
+      process.env.TZ = originalTimezone
+    }
   })
 })

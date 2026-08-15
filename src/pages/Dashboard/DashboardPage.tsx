@@ -27,7 +27,7 @@ export function DashboardPage() {
     )
   }
 
-  if (isError || budgetsError) {
+  if ((isError && transactions.length === 0) || (budgetsError && budgets.length === 0)) {
     return (
       <section>
         <h1 className="page-title">Dashboard</h1>

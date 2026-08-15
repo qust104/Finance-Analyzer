@@ -31,11 +31,20 @@ export function useTransactions(): TransactionsApi {
 
   const create = useMutation({ mutationFn: api.createTransaction, onSuccess: invalidate })
   // CSV import commits many rows as one mutation so the cache
-  // invalidates once after the whole batch finishes.
+  // invalidates once after the whole batch finishes. A partial batch
+  // failure would otherwise leave committed rows invisible: rows are
+  // settled individually and the cache is refreshed in any outcome.
   const createMany = useMutation({
-    mutationFn: (inputs: readonly TransactionInput[]) =>
-      Promise.all(inputs.map(api.createTransaction)),
-    onSuccess: invalidate,
+    mutationFn: async (inputs: readonly TransactionInput[]) => {
+      const results = await Promise.allSettled(inputs.map(api.createTransaction))
+      const failed = results.filter(
+        (result): result is PromiseRejectedResult => result.status === 'rejected',
+      )
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} of ${inputs.length} rows failed to import`)
+      }
+    },
+    onSettled: invalidate,
   })
   const update = useMutation({
     mutationFn: ({ id, input }: { id: string; input: TransactionInput }) =>

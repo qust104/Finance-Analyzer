@@ -76,7 +76,7 @@ export function TransactionsPage() {
     )
   }
 
-  if (isError) {
+  if (isError && transactions.length === 0) {
     return (
       <section>
         <h1 className="page-title">Transactions</h1>

@@ -32,7 +32,7 @@ export function BudgetsPage() {
     )
   }
 
-  if (isError) {
+  if (isError && budgets.length === 0) {
     return (
       <section>
         <h1 className="page-title">Budgets</h1>

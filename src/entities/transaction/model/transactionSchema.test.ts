@@ -38,6 +38,20 @@ describe('transactionSchema', () => {
     }
   })
 
+  it('rejects amounts finer than the cent', () => {
+    for (const amount of ['0.001', '12.345', '0.99999']) {
+      const result = transactionSchema.safeParse({ ...validValues, amount })
+      expect(result.success).toBe(false)
+    }
+  })
+
+  it('accepts amounts with up to two decimal places', () => {
+    for (const amount of ['0.01', '12.34', '99.99']) {
+      const result = transactionSchema.safeParse({ ...validValues, amount })
+      expect(result.success).toBe(true)
+    }
+  })
+
   it('accepts a numeric amount directly (API contract)', () => {
     const result = transactionSchema.safeParse({ ...validValues, amount: 2340.5 })
 

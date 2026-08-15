@@ -17,6 +17,14 @@ function roundTo(value: number, digits: number): number {
 // Budgets are monthly and evaluated against one report month:
 // the most recent month present in the data, so the demo always
 // has live numbers. Falls back to the current calendar month.
+// toISOString() is UTC: in timezones ahead of it the fallback could
+// land on the previous month during the first hours of month start.
+function currentMonthKey(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `${now.getFullYear()}-${month}`
+}
+
 export function getLatestMonthKey(transactions: readonly Transaction[]): string {
   let latest = ''
   for (const transaction of transactions) {
@@ -25,7 +33,7 @@ export function getLatestMonthKey(transactions: readonly Transaction[]): string 
       latest = month
     }
   }
-  return latest !== '' ? latest : new Date().toISOString().slice(0, 7)
+  return latest !== '' ? latest : currentMonthKey()
 }
 
 export function calculateBudgetUsage(
