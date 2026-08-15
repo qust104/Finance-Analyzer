@@ -2,15 +2,17 @@ import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../../api/budgets'
 import type { Budget, BudgetInput } from '../../entities/budget/model/types'
+import { anyMutationPending, mutationErrorMessage } from '../lib/mutationState'
 
 export interface BudgetsApi {
   budgets: Budget[]
   isPending: boolean
   isError: boolean
-  addBudget: (input: BudgetInput) => void
-  updateBudget: (id: string, input: BudgetInput) => void
+  addBudget: (input: BudgetInput) => Promise<void>
+  updateBudget: (id: string, input: BudgetInput) => Promise<void>
   removeBudget: (id: string) => void
   refetch: () => void
+  saveState: { isPending: boolean; error: string | null }
 }
 
 export function useBudgets(): BudgetsApi {
@@ -35,9 +37,12 @@ export function useBudgets(): BudgetsApi {
     onSuccess: invalidate,
   })
 
-  const addBudget = useCallback((input: BudgetInput) => create.mutate(input), [create])
+  const addBudget = useCallback(
+    (input: BudgetInput) => create.mutateAsync(input).then(() => undefined),
+    [create],
+  )
   const updateBudget = useCallback(
-    (id: string, input: BudgetInput) => update.mutate({ id, input }),
+    (id: string, input: BudgetInput) => update.mutateAsync({ id, input }).then(() => undefined),
     [update],
   )
   const removeBudget = useCallback((id: string) => remove.mutate(id), [remove])
@@ -53,5 +58,9 @@ export function useBudgets(): BudgetsApi {
     updateBudget,
     removeBudget,
     refetch,
+    saveState: {
+      isPending: anyMutationPending(create, update),
+      error: mutationErrorMessage(create, update),
+    },
   }
 }

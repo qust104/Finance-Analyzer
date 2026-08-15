@@ -12,7 +12,8 @@ import '../../shared/ui/form.css'
 
 interface ImportTransactionsModalProps {
   transactions: readonly Transaction[]
-  onImport: (inputs: readonly TransactionInput[]) => void
+  importState: { isPending: boolean; error: string | null }
+  onImport: (inputs: readonly TransactionInput[]) => Promise<void>
   onClose: () => void
 }
 
@@ -21,10 +22,15 @@ const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 
 export function ImportTransactionsModal({
   transactions,
+  importState,
   onImport,
   onClose,
 }: ImportTransactionsModalProps) {
   const [preview, setPreview] = useState<ImportPreview | null>(null)
+  // Kept so a failed batch can rebuild the preview against fresh data:
+  // rows the partial batch already committed become duplicates, and a
+  // retry sends only the rest instead of re-creating everything.
+  const [fileText, setFileText] = useState('')
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -41,7 +47,17 @@ export function ImportTransactionsModal({
       return
     }
     const text = await file.text()
+    setFileText(text)
     setPreview(buildImportPreview(text, transactions))
+  }
+
+  const handleImport = async () => {
+    if (preview === null) return
+    try {
+      await onImport(preview.valid)
+    } catch {
+      setPreview(buildImportPreview(fileText, transactions))
+    }
   }
 
   const canImport = preview !== null && preview.fileErrors.length === 0 && preview.valid.length > 0
@@ -80,7 +96,8 @@ export function ImportTransactionsModal({
               <PreviewTable
                 preview={preview}
                 canImport={canImport}
-                onImport={() => onImport(preview.valid)}
+                importState={importState}
+                onImport={handleImport}
                 onClose={onClose}
               />
             )}
@@ -94,11 +111,13 @@ export function ImportTransactionsModal({
 function PreviewTable({
   preview,
   canImport,
+  importState,
   onImport,
   onClose,
 }: {
   preview: ImportPreview
   canImport: boolean
+  importState: { isPending: boolean; error: string | null }
   onImport: () => void
   onClose: () => void
 }) {
@@ -123,18 +142,31 @@ function PreviewTable({
       </p>
 
       <div className="import__actions">
-        <button type="button" className="button button--secondary" onClick={onClose}>
+        <button
+          type="button"
+          className="button button--secondary"
+          onClick={onClose}
+          disabled={importState.isPending}
+        >
           Cancel
         </button>
         <button
           type="button"
           className="button button--primary"
-          disabled={!canImport}
+          disabled={!canImport || importState.isPending}
           onClick={onImport}
         >
-          Import {valid.length} transaction{valid.length === 1 ? '' : 's'}
+          {importState.isPending
+            ? 'Importing…'
+            : `Import ${valid.length} transaction${valid.length === 1 ? '' : 's'}`}
         </button>
       </div>
+
+      {importState.error && (
+        <p className="import__submit-error" role="alert">
+          {importState.error}
+        </p>
+      )}
 
       {valid.length > 0 && (
         <div className="import__table-wrap">

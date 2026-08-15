@@ -32,6 +32,17 @@
   color: #c0392b;
 }
 
+/* Server-side failure shown next to field validation errors:
+   the form stays open and this block explains why. */
+.form__server-error {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fdf0ef;
+  color: #c0392b;
+  font-size: 13px;
+}
+
 .button {
   border: none;
   border-radius: 8px;

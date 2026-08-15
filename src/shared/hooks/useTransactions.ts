@@ -3,16 +3,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../../api/transactions'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import type { Transaction } from '../../entities/transaction/model/types'
+import { anyMutationPending, mutationErrorMessage } from '../lib/mutationState'
 
 export interface TransactionsApi {
   transactions: Transaction[]
   isPending: boolean
   isError: boolean
-  addTransaction: (input: TransactionInput) => void
-  addTransactions: (inputs: readonly TransactionInput[]) => void
-  updateTransaction: (id: string, input: TransactionInput) => void
+  addTransaction: (input: TransactionInput) => Promise<void>
+  addTransactions: (inputs: readonly TransactionInput[]) => Promise<void>
+  updateTransaction: (id: string, input: TransactionInput) => Promise<void>
   removeTransaction: (id: string) => void
   refetch: () => void
+  saveState: { isPending: boolean; error: string | null }
+  importState: { isPending: boolean; error: string | null }
 }
 
 // Server state lives in TanStack Query: the query cache is the only
@@ -60,19 +63,21 @@ export function useTransactions(): TransactionsApi {
   // rows memoize on their callbacks, so unstable references would
   // defeat that memoization and re-render the whole table.
   const addTransaction = useCallback(
-    (input: TransactionInput) => create.mutate(input),
+    (input: TransactionInput) => create.mutateAsync(input).then(() => undefined),
     [create],
   )
   const addTransactions = useCallback(
     (inputs: readonly TransactionInput[]) => {
-      if (inputs.length > 0) {
-        createMany.mutate(inputs)
+      if (inputs.length === 0) {
+        return Promise.resolve()
       }
+      return createMany.mutateAsync(inputs).then(() => undefined)
     },
     [createMany],
   )
   const updateTransaction = useCallback(
-    (id: string, input: TransactionInput) => update.mutate({ id, input }),
+    (id: string, input: TransactionInput) =>
+      update.mutateAsync({ id, input }).then(() => undefined),
     [update],
   )
   const removeTransaction = useCallback((id: string) => remove.mutate(id), [remove])
@@ -89,5 +94,13 @@ export function useTransactions(): TransactionsApi {
     updateTransaction,
     removeTransaction,
     refetch,
+    saveState: {
+      isPending: anyMutationPending(create, update),
+      error: mutationErrorMessage(create, update),
+    },
+    importState: {
+      isPending: createMany.isPending,
+      error: mutationErrorMessage(createMany),
+    },
   }
 }

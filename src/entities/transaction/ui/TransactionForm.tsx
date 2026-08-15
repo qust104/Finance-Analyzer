@@ -11,11 +11,19 @@ import '../../../shared/ui/form.css'
 
 interface TransactionFormProps {
   initialValue?: Transaction
+  submitError?: string | null
+  isSubmitting?: boolean
   onSubmit: (input: TransactionInput) => void
   onCancel: () => void
 }
 
-export function TransactionForm({ initialValue, onSubmit, onCancel }: TransactionFormProps) {
+export function TransactionForm({
+  initialValue,
+  submitError,
+  isSubmitting,
+  onSubmit,
+  onCancel,
+}: TransactionFormProps) {
   const {
     register,
     handleSubmit,
@@ -137,12 +145,23 @@ export function TransactionForm({ initialValue, onSubmit, onCancel }: Transactio
         )}
       </div>
 
+      {submitError && (
+        <p className="form__server-error" role="alert">
+          {submitError}
+        </p>
+      )}
+
       <div className="transaction-form__actions">
-        <button type="button" className="button button--secondary" onClick={onCancel}>
+        <button
+          type="button"
+          className="button button--secondary"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </button>
-        <button type="submit" className="button button--primary">
-          {initialValue ? 'Save changes' : 'Add transaction'}
+        <button type="submit" className="button button--primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : initialValue ? 'Save changes' : 'Add transaction'}
         </button>
       </div>
     </form>

@@ -39,6 +39,15 @@
   padding: 12px 14px;
 }
 
+.import__submit-error {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fdf1f0;
+  color: #c0392b;
+  font-size: 13px;
+}
+
 .import__file-errors-title {
   margin: 0 0 6px;
   font-weight: 700;

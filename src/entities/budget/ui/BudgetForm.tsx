@@ -13,11 +13,20 @@ interface BudgetFormProps {
   initialValue?: Budget
   // Categories that already have a budget and are not available for new ones.
   usedCategories: Category[]
+  submitError?: string | null
+  isSubmitting?: boolean
   onSubmit: (input: BudgetInput) => void
   onCancel: () => void
 }
 
-export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }: BudgetFormProps) {
+export function BudgetForm({
+  initialValue,
+  usedCategories,
+  submitError,
+  isSubmitting,
+  onSubmit,
+  onCancel,
+}: BudgetFormProps) {
   const {
     register,
     handleSubmit,
@@ -92,12 +101,23 @@ export function BudgetForm({ initialValue, usedCategories, onSubmit, onCancel }:
         )}
       </div>
 
+      {submitError && (
+        <p className="form__server-error" role="alert">
+          {submitError}
+        </p>
+      )}
+
       <div className="budget-form__actions">
-        <button type="button" className="button button--secondary" onClick={onCancel}>
+        <button
+          type="button"
+          className="button button--secondary"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </button>
-        <button type="submit" className="button button--primary">
-          {initialValue ? 'Save changes' : 'Add budget'}
+        <button type="submit" className="button button--primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : initialValue ? 'Save changes' : 'Add budget'}
         </button>
       </div>
     </form>

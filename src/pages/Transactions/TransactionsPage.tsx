@@ -28,6 +28,8 @@ export function TransactionsPage() {
     isPending,
     isError,
     refetch,
+    saveState,
+    importState,
   } = useTransactions()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
   const editing = useUiStore((state) => state.transactionForm)
@@ -46,21 +48,31 @@ export function TransactionsPage() {
   const months = useMemo(() => getAvailableMonths(transactions), [transactions])
 
   const handleSubmit = useCallback(
-    (input: TransactionInput) => {
-      if (editing === 'new') {
-        addTransaction(input)
-      } else if (editing) {
-        updateTransaction(editing.id, input)
+    async (input: TransactionInput) => {
+      try {
+        if (editing === 'new') {
+          await addTransaction(input)
+        } else if (editing) {
+          await updateTransaction(editing.id, input)
+        }
+        closeTransactionForm()
+      } catch {
+        // saveState.error explains the failure, the form stays open.
       }
-      closeTransactionForm()
     },
     [editing, addTransaction, updateTransaction, closeTransactionForm],
   )
 
   const handleImport = useCallback(
-    (inputs: readonly TransactionInput[]) => {
-      addTransactions(inputs)
-      closeImportModal()
+    async (inputs: readonly TransactionInput[]) => {
+      try {
+        await addTransactions(inputs)
+        closeImportModal()
+      } catch {
+        // A partial batch failure keeps the modal open: importState.error
+        // is shown there, and retrying rebuilds the preview so already
+        // committed rows are skipped as duplicates.
+      }
     },
     [addTransactions, closeImportModal],
   )
@@ -90,11 +102,7 @@ export function TransactionsPage() {
       <div className="transactions-header">
         <h1 className="page-title">Transactions</h1>
         <div className="transactions-header__actions">
-          <button
-            type="button"
-            className="button button--secondary"
-            onClick={openImportModal}
-          >
+          <button type="button" className="button button--secondary" onClick={openImportModal}>
             Import CSV
           </button>
           <button
@@ -165,6 +173,8 @@ export function TransactionsPage() {
         >
           <TransactionForm
             initialValue={editing === 'new' ? undefined : editing}
+            submitError={saveState.error}
+            isSubmitting={saveState.isPending}
             onSubmit={handleSubmit}
             onCancel={closeTransactionForm}
           />
@@ -174,6 +184,7 @@ export function TransactionsPage() {
       {importOpen && (
         <ImportTransactionsModal
           transactions={transactions}
+          importState={importState}
           onImport={handleImport}
           onClose={closeImportModal}
         />

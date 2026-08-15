@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { MemoryRouter } from 'react-router-dom'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
@@ -120,5 +121,29 @@ describe('transactions page', () => {
       await screen.findAllByText('Imported lunch', undefined, { timeout: 4000 }),
     ).not.toHaveLength(0)
     await expectNoDialog()
+  })
+
+  it('keeps the import modal open and shows the error when the batch fails', async () => {
+    server.use(
+      http.post('*/api/transactions', () =>
+        HttpResponse.json({ error: 'Invalid transaction data' }, { status: 400 }),
+      ),
+    )
+    const user = userEvent.setup()
+    await renderPage()
+
+    await user.click(screen.getByRole('button', { name: 'Import CSV' }))
+
+    const file = new File(
+      ['date,description,amount,type,category\n2026-08-05,Imported lunch,900,expense,food'],
+      'transactions.csv',
+      { type: 'text/csv' },
+    )
+    await user.upload(screen.getByLabelText('Choose CSV file'), file)
+
+    await user.click(await screen.findByRole('button', { name: 'Import 1 transaction' }))
+
+    expect(await screen.findByText('1 of 1 rows failed to import')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

@@ -14,7 +14,7 @@ import './BudgetsPage.css'
 import '../../shared/ui/form.css'
 
 export function BudgetsPage() {
-  const { budgets, addBudget, updateBudget, removeBudget, isPending, isError, refetch } =
+  const { budgets, addBudget, updateBudget, removeBudget, isPending, isError, refetch, saveState } =
     useBudgets()
   const { transactions } = useTransactions()
   const editing = useUiStore((state) => state.budgetForm)
@@ -43,13 +43,18 @@ export function BudgetsPage() {
     )
   }
 
-  const handleSubmit = (input: BudgetInput) => {
-    if (editing === 'new') {
-      addBudget(input)
-    } else if (editing) {
-      updateBudget(editing.id, input)
+  const handleSubmit = async (input: BudgetInput) => {
+    try {
+      if (editing === 'new') {
+        await addBudget(input)
+      } else if (editing) {
+        await updateBudget(editing.id, input)
+      }
+      closeBudgetForm()
+    } catch {
+      // The mutation failed: saveState.error explains why and the form
+      // stays open, so the user can fix the input and resubmit.
     }
-    closeBudgetForm()
   }
 
   const handleEdit = (usage: BudgetUsage) => {
@@ -103,6 +108,8 @@ export function BudgetsPage() {
           <BudgetForm
             initialValue={editing === 'new' ? undefined : editing}
             usedCategories={usedCategories}
+            submitError={saveState.error}
+            isSubmitting={saveState.isPending}
             onSubmit={handleSubmit}
             onCancel={closeBudgetForm}
           />
