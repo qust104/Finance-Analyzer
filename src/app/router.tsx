@@ -56,6 +56,14 @@ export const router = createBrowserRouter(
           hydrateFallbackElement: <LoadingState />,
         },
         {
+          path: 'recurring',
+          lazy: () =>
+            import('../pages/Recurring/RecurringPage').then((m) => ({
+              Component: m.RecurringPage,
+            })),
+          hydrateFallbackElement: <LoadingState />,
+        },
+        {
           path: 'settings',
           lazy: () =>
             import('../pages/Settings/SettingsPage').then((m) => ({

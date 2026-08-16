@@ -236,4 +236,155 @@ describe('local server', () => {
     const deleted = handleLocalRequest(`/api/categories/${key}`, { method: 'DELETE' })
     expect(deleted.status).toBe(409)
   })
+
+  it('lists, creates, edits and deletes recurring templates', () => {
+    const created = handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Rent',
+        amount: 25000,
+        type: 'expense',
+        category: 'housing',
+        interval: 'monthly',
+        startDate: '2026-01-05',
+        endDate: '',
+        active: true,
+      }),
+    })
+    expect(created.status).toBe(201)
+    const id = (created.body as { id: string }).id
+
+    const list = handleLocalRequest('/api/recurring')
+    expect((list.body as unknown[]).some((entry) => (entry as { id: string }).id === id)).toBe(true)
+
+    const patched = handleLocalRequest(`/api/recurring/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        description: 'Rent updated',
+        amount: 26000,
+        type: 'expense',
+        category: 'housing',
+        interval: 'monthly',
+        startDate: '2026-01-05',
+        endDate: '',
+        active: false,
+      }),
+    })
+    expect(patched.status).toBe(200)
+    expect(patched.body).toMatchObject({ active: false, amount: 26000 })
+
+    expect(handleLocalRequest(`/api/recurring/${id}`, { method: 'DELETE' }).status).toBe(204)
+    expect(
+      handleLocalRequest(`/api/recurring/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          description: 'Rent',
+          amount: 25000,
+          type: 'expense',
+          category: 'housing',
+          interval: 'monthly',
+          startDate: '2026-01-05',
+          endDate: '',
+          active: true,
+        }),
+      }).status,
+    ).toBe(404)
+  })
+
+  it('rejects malformed recurring templates with 400', () => {
+    const result = handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({ description: 'Rent', amount: -5 }),
+    })
+    expect(result.status).toBe(400)
+  })
+
+  it('posts due recurring rows exactly once', () => {
+    const created = handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Gym',
+        amount: 1000,
+        type: 'expense',
+        category: 'health',
+        interval: 'monthly',
+        startDate: '2000-01-05',
+        endDate: '',
+        active: true,
+      }),
+    })
+    expect(created.status).toBe(201)
+
+    const first = handleLocalRequest('/api/recurring/apply', { method: 'POST' })
+    expect(first.status).toBe(200)
+    const createdCount = ((first.body as { created: number }).created)
+    expect(createdCount).toBeGreaterThan(0)
+
+    const second = handleLocalRequest('/api/recurring/apply', { method: 'POST' })
+    expect((second.body as { created: number }).created).toBe(0)
+
+    const transactions = handleLocalRequest('/api/transactions').body as unknown[]
+    const gym = transactions.filter((entry) => (entry as { description: string }).description === 'Gym')
+    expect(gym).toHaveLength(createdCount)
+    expect(gym.every((entry) => (entry as { type: string }).type === 'expense')).toBe(true)
+  })
+
+  it('advances templates but posts nothing while paused', () => {
+    handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Old sub',
+        amount: 500,
+        type: 'expense',
+        category: 'entertainment',
+        interval: 'weekly',
+        startDate: '2000-01-01',
+        endDate: '',
+        active: false,
+      }),
+    })
+    handleLocalRequest('/api/recurring/apply', { method: 'POST' })
+
+    const transactions = handleLocalRequest('/api/transactions').body as unknown[]
+    expect(transactions.some((entry) => (entry as { description: string }).description === 'Old sub')).toBe(false)
+  })
+
+  it('restores recurring templates through PUT /api/data and leaves them untouched when absent', () => {
+    const template = {
+      id: 'r-x',
+      description: 'Salary',
+      amount: 150000,
+      type: 'income',
+      category: 'salary',
+      interval: 'monthly',
+      startDate: '2026-01-05',
+      endDate: null,
+      active: true,
+      lastPostedDate: '2026-07-05',
+    }
+
+    const withoutRecurring = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({ transactions: [], budgets: [] }),
+    })
+    expect(withoutRecurring.status).toBe(200)
+    expect(
+      (handleLocalRequest('/api/recurring').body as unknown[]).some(
+        (entry) => (entry as { id: string }).id === 'r-x',
+      ),
+    ).toBe(false)
+
+    const withRecurring = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({ transactions: [], budgets: [], recurring: [template] }),
+    })
+    expect(withRecurring.status).toBe(200)
+    expect(handleLocalRequest('/api/recurring').body).toEqual([template])
+
+    const broken = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({ transactions: [], budgets: [], recurring: [{ description: 'x' }] }),
+    })
+    expect(broken.status).toBe(400)
+  })
 })

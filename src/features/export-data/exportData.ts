@@ -2,6 +2,8 @@ import { isBudget } from '../../entities/budget/model/budgetStorage'
 import type { Budget } from '../../entities/budget/model/types'
 import { isCategoryDef } from '../../entities/category/model/categoryStorage'
 import type { CategoryDef } from '../../entities/category/model/types'
+import { isRecurring } from '../../entities/recurring/model/recurringStorage'
+import type { RecurringDef } from '../../entities/recurring/model/types'
 import { isTransaction } from '../../entities/transaction/model/transactionStorage'
 import type { Transaction } from '../../entities/transaction/model/types'
 
@@ -15,12 +17,14 @@ export interface BackupPayload {
   transactions: Transaction[]
   budgets: Budget[]
   categories: CategoryDef[]
+  recurring: RecurringDef[]
 }
 
 export function buildExportPayload(
   transactions: readonly Transaction[],
   budgets: readonly Budget[],
   categories: readonly CategoryDef[] = [],
+  recurring: readonly RecurringDef[] = [],
   exportedAt: Date = new Date(),
 ): BackupPayload {
   return {
@@ -29,6 +33,7 @@ export function buildExportPayload(
     transactions: [...transactions],
     budgets: [...budgets],
     categories: [...categories],
+    recurring: [...recurring],
   }
 }
 
@@ -64,6 +69,19 @@ export function parseExportPayload(raw: unknown): ParseBackupResult {
     return { ok: false, error: 'Backup contains invalid category rows' }
   }
 
+  // Recurring templates shipped after categories; absent field means the
+  // restore leaves them untouched, present-but-broken rows fail loudly.
+  const rawRecurring = candidate.recurring
+  const recurring =
+    rawRecurring === undefined
+      ? null
+      : Array.isArray(rawRecurring) && rawRecurring.every(isRecurring)
+        ? (rawRecurring as RecurringDef[])
+        : undefined
+  if (recurring === undefined) {
+    return { ok: false, error: 'Backup contains invalid recurring templates' }
+  }
+
   const transactions = candidate.transactions.filter(isTransaction)
   const budgets = candidate.budgets.filter(isBudget)
   if (transactions.length !== candidate.transactions.length) {
@@ -81,6 +99,7 @@ export function parseExportPayload(raw: unknown): ParseBackupResult {
       transactions,
       budgets,
       categories: categories ?? [],
+      recurring: recurring ?? [],
     },
   }
 }

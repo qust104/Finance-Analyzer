@@ -8,6 +8,7 @@ import {
 } from '../../features/export-data/exportData'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useCategories } from '../../shared/hooks/useCategories'
+import { useRecurring } from '../../shared/hooks/useRecurring'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { PageContainer } from '../../shared/ui/PageContainer'
 import './SettingsPage.css'
@@ -17,6 +18,7 @@ export function SettingsPage() {
     useTransactions()
   const { budgets, isPending: budgetsPending, refetch: refetchBudgets } = useBudgets()
   const { categories, isPending: categoriesPending, refetch: refetchCategories } = useCategories()
+  const { recurring, isPending: recurringPending, refetch: refetchRecurring } = useRecurring()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [restoring, setRestoring] = useState(false)
@@ -24,7 +26,7 @@ export function SettingsPage() {
   const [restoreDone, setRestoreDone] = useState(false)
 
   const handleExport = () => {
-    downloadBackup(buildExportPayload(transactions, budgets, categories))
+    downloadBackup(buildExportPayload(transactions, budgets, categories, recurring))
   }
 
   const handleRestore = async (file: File | undefined) => {
@@ -60,10 +62,11 @@ export function SettingsPage() {
 
     try {
       setRestoring(true)
-      await restoreData(payload.transactions, payload.budgets, payload.categories)
+      await restoreData(payload.transactions, payload.budgets, payload.categories, payload.recurring)
       refetchTransactions()
       refetchBudgets()
       refetchCategories()
+      refetchRecurring()
       setRestoreDone(true)
     } catch {
       setRestoreError('Restore failed. Your data was not changed.')
@@ -73,7 +76,7 @@ export function SettingsPage() {
     }
   }
 
-  const dataReady = !transactionsPending && !budgetsPending && !categoriesPending
+  const dataReady = !transactionsPending && !budgetsPending && !categoriesPending && !recurringPending
 
   return (
     <PageContainer title="Settings">

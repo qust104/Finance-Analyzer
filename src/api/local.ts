@@ -12,9 +12,15 @@ import { createLocalStorageBudgetRepository } from '../entities/budget/model/bud
 import { createLocalStorageCategoryRepository } from '../entities/category/model/categoryRepository'
 import { categorySchema } from '../entities/category/model/categorySchema'
 import { isCategoryDef } from '../entities/category/model/categoryStorage'
+import { createLocalStorageRecurringRepository } from '../entities/recurring/model/recurringRepository'
+import { recurringSchema } from '../entities/recurring/model/recurringSchema'
+import { isRecurring } from '../entities/recurring/model/recurringStorage'
 import { createLocalStorageTransactionRepository } from '../entities/transaction/model/repository'
 import { isTransaction } from '../entities/transaction/model/transactionStorage'
 import { transactionSchema } from '../entities/transaction/model/transactionSchema'
+import { computeRecurringPlan } from '../features/recurring/schedule'
+
+const today = () => new Date().toISOString().slice(0, 10)
 
 export interface LocalResponse {
   status: number
@@ -27,6 +33,7 @@ export interface LocalResponse {
 const transactions = createLocalStorageTransactionRepository()
 const budgets = createLocalStorageBudgetRepository()
 const categories = createLocalStorageCategoryRepository()
+const recurring = createLocalStorageRecurringRepository()
 
 function parseTransactionInput(body: unknown) {
   const parsed = transactionSchema.safeParse(body)
@@ -71,10 +78,13 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
   const params =
     matchRoute(normalized, 'api/transactions/:id') ??
     matchRoute(normalized, 'api/budgets/:id') ??
-    matchRoute(normalized, 'api/categories/:key')
+    matchRoute(normalized, 'api/categories/:key') ??
+    matchRoute(normalized, 'api/recurring/:id')
   const isList = normalized === '/api/transactions'
   const isBudgets = normalized === '/api/budgets'
   const isCategories = normalized === '/api/categories'
+  const isRecurringList = normalized === '/api/recurring'
+  const isRecurringApply = normalized === '/api/recurring/apply'
   const isAnalytics = normalized === '/api/analytics'
   const isData = normalized === '/api/data'
   const method = init?.method?.toUpperCase() ?? 'GET'
@@ -190,6 +200,54 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     }
   }
 
+  if (isRecurringApply && method === 'POST') {
+    // The generator is idempotent: fingerprints of already-posted rows
+    // keep it from creating duplicates even across partial failures.
+    const plan = computeRecurringPlan(recurring.getAll(), transactions.getAll(), today())
+    for (const input of plan.toCreate) {
+      transactions.create(input)
+    }
+    for (const advance of plan.advances) {
+      recurring.advance(advance.id, advance.lastPostedDate)
+    }
+    return { status: 200, body: { created: plan.toCreate.length } }
+  }
+
+  if (normalized.startsWith('/api/recurring') && !isRecurringList && params) {
+    const id = String(params.id)
+    if (id === 'apply') {
+      return { status: 404, body: { error: 'Not found' } }
+    }
+    if (method === 'PATCH') {
+      const parsed = recurringSchema.safeParse(parseBody(init))
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? 'Invalid recurring data'
+        return { status: 400, body: { error: message } }
+      }
+      try {
+        return { status: 200, body: recurring.update(id, parsed.data) }
+      } catch {
+        return { status: 404, body: { error: 'Recurring template not found' } }
+      }
+    }
+    if (method === 'DELETE') {
+      recurring.delete(id)
+      return { status: 204 }
+    }
+  }
+
+  if (isRecurringList) {
+    if (method === 'GET') return { status: 200, body: recurring.getAll() }
+    if (method === 'POST') {
+      const parsed = recurringSchema.safeParse(parseBody(init))
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? 'Invalid recurring data'
+        return { status: 400, body: { error: message } }
+      }
+      return { status: 201, body: recurring.create(parsed.data) }
+    }
+  }
+
   if (isAnalytics && method === 'GET') {
     const all = transactions.getAll()
     const month = resolveReportMonth(all).month
@@ -211,7 +269,12 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
 
   if (isData && method === 'PUT') {
     const body = parseBody(init) as
-      | { transactions?: unknown; budgets?: unknown; categories?: unknown }
+      | {
+          transactions?: unknown
+          budgets?: unknown
+          categories?: unknown
+          recurring?: unknown
+        }
       | undefined
     const nextTransactions = Array.isArray(body?.transactions) ? body.transactions : null
     const nextBudgets = Array.isArray(body?.budgets) ? body.budgets : null
@@ -234,10 +297,22 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     if (nextCategories === undefined) {
       return { status: 400, body: { error: 'Invalid categories in payload' } }
     }
+    const nextRecurring =
+      body?.recurring === undefined
+        ? null
+        : Array.isArray(body.recurring) && body.recurring.every(isRecurring)
+          ? body.recurring
+          : undefined
+    if (nextRecurring === undefined) {
+      return { status: 400, body: { error: 'Invalid recurring templates in payload' } }
+    }
     transactions.replaceAll(nextTransactions)
     budgets.replaceAll(nextBudgets)
     if (nextCategories !== null) {
       categories.replaceAll(nextCategories)
+    }
+    if (nextRecurring !== null) {
+      recurring.replaceAll(nextRecurring)
     }
     return {
       status: 200,

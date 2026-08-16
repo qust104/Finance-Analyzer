@@ -7,6 +7,7 @@ import {
 } from './exportData'
 import type { Budget } from '../../entities/budget/model/types'
 import type { CategoryDef } from '../../entities/category/model/types'
+import type { RecurringDef } from '../../entities/recurring/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 
 const transactions: Transaction[] = [
@@ -32,12 +33,28 @@ const categories: CategoryDef[] = [
   },
 ]
 
+const recurring: RecurringDef[] = [
+  {
+    id: 'r1',
+    description: 'Rent',
+    amount: 25000,
+    type: 'expense',
+    category: 'housing',
+    interval: 'monthly',
+    startDate: '2026-01-05',
+    endDate: null,
+    active: true,
+    lastPostedDate: '2026-07-05',
+  },
+]
+
 describe('backup payload', () => {
   it('round-trips a valid payload', () => {
     const payload = buildExportPayload(
       transactions,
       budgets,
       categories,
+      recurring,
       new Date('2026-08-16T10:00:00Z'),
     )
     const parsed = parseExportPayload(payload)
@@ -47,15 +64,28 @@ describe('backup payload', () => {
     expect(parsed.value).toEqual(payload)
   })
 
-  it('round-trips a payload without a categories field', () => {
+  it('round-trips a payload without optional fields', () => {
     const payload = buildExportPayload(transactions, budgets)
     const legacy: Record<string, unknown> = { ...payload }
     delete legacy.categories
+    delete legacy.recurring
     const parsed = parseExportPayload(legacy)
 
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
     expect(parsed.value).toEqual(payload)
+  })
+
+  it('rejects a payload with invalid recurring templates', () => {
+    const payload = buildExportPayload(transactions, budgets)
+    const parsed = parseExportPayload({
+      ...payload,
+      recurring: [{ id: 'r', description: 'Rent', amount: 25000 }],
+    })
+
+    expect(parsed.ok).toBe(false)
+    if (parsed.ok) return
+    expect(parsed.error).toContain('invalid recurring')
   })
 
   it('rejects a payload with invalid category rows', () => {
