@@ -48,6 +48,14 @@ export const router = createBrowserRouter(
           hydrateFallbackElement: <LoadingState />,
         },
         {
+          path: 'categories',
+          lazy: () =>
+            import('../pages/Categories/CategoriesPage').then((m) => ({
+              Component: m.CategoriesPage,
+            })),
+          hydrateFallbackElement: <LoadingState />,
+        },
+        {
           path: 'settings',
           lazy: () =>
             import('../pages/Settings/SettingsPage').then((m) => ({

@@ -4,6 +4,7 @@ import { calculateTotalExpenses, calculateTotalIncome } from '../../analytics/ca
 import { formatCurrency } from '../../shared/lib/format'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { useCategories } from '../../shared/hooks/useCategories'
 import { CategoryBreakdownChart } from './CategoryBreakdownChart'
 import { MonthComparisonCard } from './MonthComparisonCard'
 import { MonthlyTrendChart } from './MonthlyTrendChart'
@@ -11,11 +12,12 @@ import './AnalyticsPage.css'
 
 export function AnalyticsPage() {
   const { transactions, isPending, isError, refetch } = useTransactions()
+  const { categories, isPending: categoriesPending } = useCategories()
 
   const trend = useMemo(() => calculateMonthlyTrend(transactions), [transactions])
   const categoryTrend = useMemo(() => calculateCategoryTrend(transactions), [transactions])
 
-  if (isPending) {
+  if (isPending || categoriesPending) {
     return (
       <section>
         <h1 className="page-title">Analytics</h1>
@@ -70,7 +72,7 @@ export function AnalyticsPage() {
       </div>
 
       <MonthlyTrendChart data={trend} />
-      <CategoryBreakdownChart data={categoryTrend} />
+      <CategoryBreakdownChart data={categoryTrend} categories={categories} />
       <MonthComparisonCard trend={trend} />
     </section>
   )

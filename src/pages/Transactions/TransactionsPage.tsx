@@ -15,6 +15,7 @@ import { Toast } from '../../shared/ui/Toast'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
 import { useUndoableDelete } from '../../shared/hooks/useUndoableDelete'
+import { useCategories } from '../../shared/hooks/useCategories'
 import { useUiStore } from '../../shared/store/uiStore'
 import { ImportTransactionsModal } from '../../features/import-transactions/ImportTransactionsModal'
 import './TransactionsPage.css'
@@ -33,6 +34,7 @@ export function TransactionsPage() {
     saveState,
     importState,
   } = useTransactions()
+  const { categories } = useCategories()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
   const { requestDelete, restorePending, clearUndo, pendingUndo } = useUndoableDelete({
     message: 'Transaction deleted',
@@ -133,6 +135,7 @@ export function TransactionsPage() {
       <TransactionFilters
         filters={filters}
         months={months}
+        categories={categories}
         onChange={updateFilters}
         onReset={resetFilters}
       />
@@ -164,6 +167,7 @@ export function TransactionsPage() {
         <>
           <TransactionList
             transactions={filteredTransactions}
+            categories={categories}
             onEdit={openTransactionForm}
             onDelete={requestDelete}
           />
@@ -172,6 +176,7 @@ export function TransactionsPage() {
               <li key={transaction.id} className="transaction-cards__item">
                 <TransactionCard
                   transaction={transaction}
+                  categories={categories}
                   onEdit={openTransactionForm}
                   onDelete={requestDelete}
                 />
@@ -188,6 +193,7 @@ export function TransactionsPage() {
         >
           <TransactionForm
             initialValue={editing === 'new' ? undefined : editing}
+            categories={categories}
             submitError={saveState.error}
             isSubmitting={saveState.isPending}
             onSubmit={handleSubmit}
@@ -199,6 +205,7 @@ export function TransactionsPage() {
       {importOpen && (
         <ImportTransactionsModal
           transactions={transactions}
+          categories={categories}
           importState={importState}
           onImport={handleImport}
           onClose={closeImportModal}

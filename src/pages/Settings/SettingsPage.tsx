@@ -7,6 +7,7 @@ import {
   readBackupFile,
 } from '../../features/export-data/exportData'
 import { useBudgets } from '../../shared/hooks/useBudgets'
+import { useCategories } from '../../shared/hooks/useCategories'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { PageContainer } from '../../shared/ui/PageContainer'
 import './SettingsPage.css'
@@ -15,6 +16,7 @@ export function SettingsPage() {
   const { transactions, isPending: transactionsPending, refetch: refetchTransactions } =
     useTransactions()
   const { budgets, isPending: budgetsPending, refetch: refetchBudgets } = useBudgets()
+  const { categories, isPending: categoriesPending, refetch: refetchCategories } = useCategories()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [restoring, setRestoring] = useState(false)
@@ -22,7 +24,7 @@ export function SettingsPage() {
   const [restoreDone, setRestoreDone] = useState(false)
 
   const handleExport = () => {
-    downloadBackup(buildExportPayload(transactions, budgets))
+    downloadBackup(buildExportPayload(transactions, budgets, categories))
   }
 
   const handleRestore = async (file: File | undefined) => {
@@ -58,9 +60,10 @@ export function SettingsPage() {
 
     try {
       setRestoring(true)
-      await restoreData(payload.transactions, payload.budgets)
+      await restoreData(payload.transactions, payload.budgets, payload.categories)
       refetchTransactions()
       refetchBudgets()
+      refetchCategories()
       setRestoreDone(true)
     } catch {
       setRestoreError('Restore failed. Your data was not changed.')
@@ -70,7 +73,7 @@ export function SettingsPage() {
     }
   }
 
-  const dataReady = !transactionsPending && !budgetsPending
+  const dataReady = !transactionsPending && !budgetsPending && !categoriesPending
 
   return (
     <PageContainer title="Settings">

@@ -1,21 +1,24 @@
 import { memo } from 'react'
+import type { CategoryDef } from '../../category/model/types'
+import { categoryLabelOf } from '../../category/model/catalog'
 import type { Transaction } from '../model/types'
-import { CATEGORY_LABELS, TYPE_LABELS } from '../model/types'
+import { TYPE_LABELS } from '../model/types'
 import { formatAmount, formatDate } from '../../../shared/lib/format'
 import './TransactionList.css'
 
 interface TransactionRowProps {
   transaction: Transaction
+  categories: readonly CategoryDef[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
 }
 
-function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) {
+function TransactionRow({ transaction, categories, onEdit, onDelete }: TransactionRowProps) {
   return (
     <tr>
       <td>{formatDate(transaction.date)}</td>
       <td>{transaction.description}</td>
-      <td>{CATEGORY_LABELS[transaction.category]}</td>
+      <td>{categoryLabelOf(categories, transaction.category)}</td>
       <td>
         <span className={`transaction-type transaction-type--${transaction.type}`}>
           {TYPE_LABELS[transaction.type]}
@@ -42,6 +45,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
 
 interface TransactionListProps {
   transactions: Transaction[]
+  categories: readonly CategoryDef[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
 }
@@ -50,7 +54,12 @@ interface TransactionListProps {
 // every keystroke, and only the rows whose props changed should pay.
 const MemoizedRow = memo(TransactionRow)
 
-export function TransactionList({ transactions, onEdit, onDelete }: TransactionListProps) {
+export function TransactionList({
+  transactions,
+  categories,
+  onEdit,
+  onDelete,
+}: TransactionListProps) {
   return (
     <table className="transaction-table">
       <thead>
@@ -72,6 +81,7 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
           <MemoizedRow
             key={transaction.id}
             transaction={transaction}
+            categories={categories}
             onEdit={onEdit}
             onDelete={onDelete}
           />

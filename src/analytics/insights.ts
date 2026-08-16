@@ -1,6 +1,7 @@
 import type { Budget } from '../entities/budget/model/types'
+import { categoryLabelOf } from '../entities/category/model/catalog'
+import type { CategoryDef } from '../entities/category/model/types'
 import type { Category, Transaction } from '../entities/transaction/model/types'
-import { CATEGORY_LABELS } from '../entities/transaction/model/types'
 import { calculateBudgetUsage } from './budgets'
 import {
   calculateCategoryStats,
@@ -25,7 +26,9 @@ export function generateInsights(
   transactions: readonly Transaction[],
   budgets: readonly Budget[],
   month: string,
+  categories: readonly CategoryDef[] = [],
 ): Insight[] {
+  const label = (category: string) => categoryLabelOf(categories, category)
   const insights: Insight[] = []
 
   const monthExpenses = transactions.filter(
@@ -43,8 +46,8 @@ export function generateInsights(
       insights.push({
         id: `growth-${category}`,
         type: 'warning',
-        title: `${CATEGORY_LABELS[category]} spending rising`,
-        description: `${CATEGORY_LABELS[category]} expenses increased by ${Math.round(growth)}% month over month.`,
+        title: `${label(category)} spending rising`,
+        description: `${label(category)} expenses increased by ${Math.round(growth)}% month over month.`,
         priority: 2,
       })
     }
@@ -56,8 +59,8 @@ export function generateInsights(
       insights.push({
         id: `budget-${usage.budget.category}`,
         type: 'warning',
-        title: `${CATEGORY_LABELS[usage.budget.category]} budget exceeded`,
-        description: `You exceeded your ${CATEGORY_LABELS[usage.budget.category]} budget by ${Math.round(-usage.remaining)} ₽.`,
+        title: `${label(usage.budget.category)} budget exceeded`,
+        description: `You exceeded your ${label(usage.budget.category)} budget by ${Math.round(-usage.remaining)} ₽.`,
         priority: 3,
       })
     }
@@ -82,8 +85,8 @@ export function generateInsights(
     insights.push({
       id: `dominant-${largest.category}`,
       type: 'info',
-      title: `${CATEGORY_LABELS[largest.category]} dominates spending`,
-      description: `${CATEGORY_LABELS[largest.category]} accounts for ${largest.percentage}% of your expenses.`,
+      title: `${label(largest.category)} dominates spending`,
+      description: `${label(largest.category)} accounts for ${largest.percentage}% of your expenses.`,
       priority: 1,
     })
   }

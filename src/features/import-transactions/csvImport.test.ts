@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { BUILTIN_CATEGORIES } from '../../entities/category/model/catalog'
 import type { Transaction } from '../../entities/transaction/model/types'
 import {
   MAX_IMPORT_ROWS,
@@ -11,6 +12,18 @@ import {
   transactionFingerprint,
 } from './csvImport'
 import { parseCsv } from './parseCsv'
+
+// The catalogue resolves display labels and configured aliases as well as raw keys.
+const CATEGORIES = [
+  ...BUILTIN_CATEGORIES,
+  {
+    key: 'crypto',
+    label: 'Crypto',
+    color: '#7c3aed',
+    aliases: ['coins'],
+    builtin: false,
+  },
+]
 
 const HEADERS = ['date', 'description', 'amount', 'type', 'category']
 
@@ -124,26 +137,31 @@ describe('parseCsvType', () => {
 
 describe('parseCsvCategory', () => {
   it('normalizes canonical values', () => {
-    expect(parseCsvCategory('food')).toBe('food')
-    expect(parseCsvCategory('FOOD')).toBe('food')
+    expect(parseCsvCategory(CATEGORIES, 'food')).toBe('food')
+    expect(parseCsvCategory(CATEGORIES, 'FOOD')).toBe('food')
   })
 
-  it('maps aliases', () => {
-    expect(parseCsvCategory('еда')).toBe('food')
-    expect(parseCsvCategory('groceries')).toBe('food')
-    expect(parseCsvCategory('жильё')).toBe('housing')
-    expect(parseCsvCategory('развлечения')).toBe('entertainment')
+  it('maps aliases and labels', () => {
+    expect(parseCsvCategory(CATEGORIES, 'еда')).toBe('food')
+    expect(parseCsvCategory(CATEGORIES, 'groceries')).toBe('food')
+    expect(parseCsvCategory(CATEGORIES, 'жильё')).toBe('housing')
+    expect(parseCsvCategory(CATEGORIES, 'развлечения')).toBe('entertainment')
+  })
+
+  it('resolves custom categories through configured aliases', () => {
+    expect(parseCsvCategory(CATEGORIES, 'coins')).toBe('crypto')
+    expect(parseCsvCategory(CATEGORIES, 'Crypto')).toBe('crypto')
   })
 
   it('rejects unknown categories', () => {
-    expect(parseCsvCategory('crypto')).toBeNull()
-    expect(parseCsvCategory('')).toBeNull()
+    expect(parseCsvCategory(CATEGORIES, 'mining')).toBeNull()
+    expect(parseCsvCategory(CATEGORIES, '')).toBeNull()
   })
 })
 
 describe('normalizeCsvRow', () => {
   it('builds a valid transaction input', () => {
-    const result = normalizeCsvRow(['2026-08-01', 'Salary', '150000', 'income', 'salary'], HEADERS)
+    const result = normalizeCsvRow(['2026-08-01', 'Salary', '150000', 'income', 'salary'], HEADERS, CATEGORIES)
 
     expect(result).toEqual({
       ok: true,
@@ -158,7 +176,7 @@ describe('normalizeCsvRow', () => {
   })
 
   it('collects all errors for a broken row', () => {
-    const result = normalizeCsvRow(['2026-02-30', '', '0', 'transfer', 'crypto'], HEADERS)
+    const result = normalizeCsvRow(['2026-02-30', '', '0', 'transfer', 'crypto'], HEADERS, CATEGORIES)
 
     expect(result).toEqual({
       ok: false,
@@ -166,7 +184,6 @@ describe('normalizeCsvRow', () => {
         'Invalid date "2026-02-30", expected YYYY-MM-DD',
         'Amount must be a positive number',
         'Type must be "income" or "expense"',
-        'Unknown category',
         'Description is required',
       ],
     })
@@ -176,6 +193,7 @@ describe('normalizeCsvRow', () => {
     const result = normalizeCsvRow(
       ['150000', 'salary', 'Salary', 'income', '2026-08-01'],
       ['amount', 'category', 'description', 'type', 'date'],
+      CATEGORIES,
     )
 
     expect(result).toEqual({
@@ -220,7 +238,7 @@ describe('buildImportPreview', () => {
       '2026-08-02,Pyaterochka,2340,expense,food',
     ].join('\n')
 
-    const preview = buildImportPreview(text, existing)
+    const preview = buildImportPreview(text, existing, CATEGORIES)
 
     // Salary already exists locally, so the file copy is a duplicate,
     // while both Pyaterochka rows are legitimate purchases.
@@ -234,14 +252,14 @@ describe('buildImportPreview', () => {
   })
 
   it('flags missing required columns', () => {
-    const preview = buildImportPreview('date,description\n2026-08-01,Salary', [])
+    const preview = buildImportPreview('date,description\n2026-08-01,Salary', [], CATEGORIES)
 
     expect(preview.fileErrors).toEqual(['Missing columns: amount, type, category'])
     expect(preview.valid).toEqual([])
   })
 
   it('flags an empty file', () => {
-    const preview = buildImportPreview('', [])
+    const preview = buildImportPreview('', [], CATEGORIES)
 
     expect(preview.fileErrors).toEqual(['The file is empty or has no header row'])
   })
@@ -253,7 +271,7 @@ describe('buildImportPreview', () => {
       '2026-08-01,A,10,expense,food',
     ].join('\n')
 
-    const preview = buildImportPreview(text, [])
+    const preview = buildImportPreview(text, [], CATEGORIES)
 
     expect(preview.valid).toHaveLength(2)
     expect(preview.duplicates).toEqual([])
@@ -285,7 +303,7 @@ describe('buildImportPreview', () => {
       },
     ]
 
-    const preview = buildImportPreview(text, alreadyImported)
+    const preview = buildImportPreview(text, alreadyImported, CATEGORIES)
 
     expect(preview.valid).toEqual([])
     expect(preview.duplicates).toEqual([2, 3])
@@ -297,7 +315,7 @@ describe('buildImportPreview', () => {
       ...Array.from({ length: MAX_IMPORT_ROWS + 1 }, () => '2026-08-01,A,10,expense,food'),
     ].join('\n')
 
-    const preview = buildImportPreview(text, [])
+    const preview = buildImportPreview(text, [], CATEGORIES)
 
     expect(preview.fileErrors).toEqual([
       `The file has too many rows. Maximum is ${MAX_IMPORT_ROWS} rows.`,

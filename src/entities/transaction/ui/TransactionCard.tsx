@@ -1,17 +1,21 @@
 import { memo } from 'react'
+import type { CategoryDef } from '../../category/model/types'
+import { categoryLabelOf } from '../../category/model/catalog'
 import type { Transaction } from '../model/types'
-import { CATEGORY_LABELS, TYPE_LABELS } from '../model/types'
+import { TYPE_LABELS } from '../model/types'
 import { formatAmount, formatDate } from '../../../shared/lib/format'
 import './TransactionList.css'
 
 interface TransactionCardProps {
   transaction: Transaction
+  categories: readonly CategoryDef[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
 }
 
 export const TransactionCard = memo(function TransactionCard({
   transaction,
+  categories,
   onEdit,
   onDelete,
 }: TransactionCardProps) {
@@ -27,7 +31,7 @@ export const TransactionCard = memo(function TransactionCard({
       </div>
       <p className="transaction-card__description">{transaction.description}</p>
       <div className="transaction-card__meta">
-        <span>{CATEGORY_LABELS[transaction.category]}</span>
+        <span>{categoryLabelOf(categories, transaction.category)}</span>
         <span>{formatDate(transaction.date)}</span>
       </div>
       <div className="transaction-card__actions">

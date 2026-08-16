@@ -1,16 +1,19 @@
 import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORY_LABELS } from '../../entities/transaction/model/types'
+import { categoryLabelOf } from '../../entities/category/model/catalog'
+import type { CategoryDef } from '../../entities/category/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 import { formatAmount, formatDate } from '../../shared/lib/format'
 import './RecentTransactions.css'
 
 interface RecentTransactionsProps {
   transactions: readonly Transaction[]
+  categories: readonly CategoryDef[]
 }
 
 export const RecentTransactions = memo(function RecentTransactions({
   transactions,
+  categories,
 }: RecentTransactionsProps) {
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
@@ -30,7 +33,7 @@ export const RecentTransactions = memo(function RecentTransactions({
           <li key={transaction.id} className="recent-transactions__item">
             <span className="recent-transactions__description">{transaction.description}</span>
             <span className="recent-transactions__category">
-              {CATEGORY_LABELS[transaction.category]}
+              {categoryLabelOf(categories, transaction.category)}
             </span>
             <span className="recent-transactions__date">{formatDate(transaction.date)}</span>
             <span

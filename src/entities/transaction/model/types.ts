@@ -1,7 +1,10 @@
 export type TransactionType = 'income' | 'expense'
 
-export type Category =
-  'salary' | 'food' | 'transport' | 'shopping' | 'entertainment' | 'health' | 'housing' | 'other'
+// A transaction stores the category key: a built-in slug or a custom
+// category created by the user. The catalogue itself lives in
+// entities/category: rows must stay readable even if a category was
+// somehow removed, so the key is just a non-empty string at this layer.
+export type Category = string
 
 // Amounts are always stored as positive numbers.
 // Transaction type determines the cash-flow direction.
@@ -14,29 +17,7 @@ export interface Transaction {
   description: string
 }
 
-export const ALL_CATEGORIES = [
-  'salary',
-  'food',
-  'transport',
-  'shopping',
-  'entertainment',
-  'health',
-  'housing',
-  'other',
-] as const satisfies readonly Category[]
-
 export const TYPE_LABELS: Record<TransactionType, string> = {
   income: 'Income',
   expense: 'Expense',
-}
-
-export const CATEGORY_LABELS: Record<Category, string> = {
-  salary: 'Salary',
-  food: 'Food',
-  transport: 'Transport',
-  shopping: 'Shopping',
-  entertainment: 'Entertainment',
-  health: 'Health',
-  housing: 'Housing',
-  other: 'Other',
 }

@@ -4,13 +4,14 @@ import type { SubmitHandler } from 'react-hook-form'
 import type { TransactionInput } from '../model/repository'
 import { transactionSchema } from '../model/transactionSchema'
 import type { TransactionFormValues } from '../model/transactionSchema'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
+import type { CategoryDef } from '../../category/model/types'
 import type { Category, Transaction } from '../model/types'
 import './TransactionForm.css'
 import '../../../shared/ui/form.css'
 
 interface TransactionFormProps {
   initialValue?: Transaction
+  categories: readonly CategoryDef[]
   submitError?: string | null
   isSubmitting?: boolean
   onSubmit: (input: TransactionInput) => void
@@ -19,6 +20,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({
   initialValue,
+  categories,
   submitError,
   isSubmitting,
   onSubmit,
@@ -113,9 +115,9 @@ export function TransactionForm({
           aria-describedby={errors.category ? 'transaction-category-error' : undefined}
         >
           <option value="">Select category</option>
-          {ALL_CATEGORIES.map((item) => (
-            <option key={item} value={item}>
-              {CATEGORY_LABELS[item]}
+          {categories.map((category) => (
+            <option key={category.key} value={category.key}>
+              {category.label}
             </option>
           ))}
         </select>

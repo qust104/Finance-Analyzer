@@ -58,8 +58,14 @@ describe('transactionSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects an unknown category', () => {
+  it('accepts any non-empty category (the catalogue is user-extendable)', () => {
     const result = transactionSchema.safeParse({ ...validValues, category: 'crypto' })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects an empty category', () => {
+    const result = transactionSchema.safeParse({ ...validValues, category: '' })
 
     expect(result.success).toBe(false)
   })

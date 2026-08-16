@@ -1,17 +1,18 @@
 import type { BudgetUsage } from '../../../analytics/budgets'
-import { CATEGORY_LABELS } from '../../transaction/model/types'
-import { CATEGORY_COLORS } from '../../../shared/lib/categoryColors'
+import { categoryColorOf, categoryLabelOf } from '../../category/model/catalog'
+import type { CategoryDef } from '../../category/model/types'
 import { formatCurrency } from '../../../shared/lib/format'
 import './BudgetProgress.css'
 import '../../../shared/ui/form.css'
 
 interface BudgetProgressProps {
   usage: BudgetUsage
+  categories: readonly CategoryDef[]
   onEdit?: (usage: BudgetUsage) => void
   onDelete?: (id: string) => void
 }
 
-export function BudgetProgress({ usage, onEdit, onDelete }: BudgetProgressProps) {
+export function BudgetProgress({ usage, categories, onEdit, onDelete }: BudgetProgressProps) {
   const { budget, spent, usagePercent, remaining, exceeded } = usage
   const barWidth = usagePercent > 100 ? 100 : usagePercent
   const stateClass = exceeded ? '--exceeded' : usagePercent > 90 ? '--warning' : '--ok'
@@ -22,9 +23,9 @@ export function BudgetProgress({ usage, onEdit, onDelete }: BudgetProgressProps)
         <span className="budget-progress__category">
           <span
             className="budget-progress__dot"
-            style={{ background: CATEGORY_COLORS[budget.category] }}
+            style={{ background: categoryColorOf(categories, budget.category) }}
           />
-          {CATEGORY_LABELS[budget.category]}
+          {categoryLabelOf(categories, budget.category)}
         </span>
         <span className="budget-progress__percent">{usagePercent.toFixed(1)}%</span>
       </div>

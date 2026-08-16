@@ -1,28 +1,30 @@
 import { memo, useMemo } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { calculateCategoryStats } from '../../analytics/calculations'
-import { CATEGORY_LABELS } from '../../entities/transaction/model/types'
+import { categoryColorOf, categoryLabelOf } from '../../entities/category/model/catalog'
+import type { CategoryDef } from '../../entities/category/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
-import { CATEGORY_COLORS } from '../../shared/lib/categoryColors'
 import { formatCurrency, formatPercent } from '../../shared/lib/format'
 import './SpendingByCategory.css'
 
 interface SpendingByCategoryProps {
   transactions: readonly Transaction[]
+  categories: readonly CategoryDef[]
 }
 
 export const SpendingByCategory = memo(function SpendingByCategory({
   transactions,
+  categories,
 }: SpendingByCategoryProps) {
   const data = useMemo(() => {
     const stats = calculateCategoryStats(transactions)
     return stats.map((stat) => ({
-      name: CATEGORY_LABELS[stat.category],
+      name: categoryLabelOf(categories, stat.category),
       value: stat.amount,
       percentage: stat.percentage,
-      fill: CATEGORY_COLORS[stat.category],
+      fill: categoryColorOf(categories, stat.category),
     }))
-  }, [transactions])
+  }, [transactions, categories])
 
   if (data.length === 0) {
     return (

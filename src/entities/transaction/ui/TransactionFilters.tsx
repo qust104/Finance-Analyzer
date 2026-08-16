@@ -1,13 +1,14 @@
 import { hasActiveFilters } from '../model/filters'
 import type { TransactionFilters } from '../model/filters'
 import { formatMonthKey } from '../../../shared/lib/format'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '../model/types'
+import type { CategoryDef } from '../../category/model/types'
 import './TransactionFilters.css'
 import '../../../shared/ui/form.css'
 
 interface TransactionFiltersProps {
   filters: TransactionFilters
   months: string[]
+  categories: readonly CategoryDef[]
   onChange: (patch: Partial<TransactionFilters>) => void
   onReset: () => void
 }
@@ -15,6 +16,7 @@ interface TransactionFiltersProps {
 export function TransactionFilters({
   filters,
   months,
+  categories,
   onChange,
   onReset,
 }: TransactionFiltersProps) {
@@ -42,9 +44,9 @@ export function TransactionFilters({
             }
           >
             <option value="all">All categories</option>
-            {ALL_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {CATEGORY_LABELS[category]}
+            {categories.map((category) => (
+              <option key={category.key} value={category.key}>
+                {category.label}
               </option>
             ))}
           </select>

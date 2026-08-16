@@ -3,8 +3,13 @@ import { Profiler } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import type { CategoryDef } from '../../category/model/types'
 import type { Transaction } from '../model/types'
 import { TransactionList } from './TransactionList'
+
+const categories: CategoryDef[] = [
+  { key: 'food', label: 'Food', color: '#f59e0b', aliases: [], builtin: true },
+]
 
 function makeTransaction(id: number): Transaction {
   return {
@@ -20,7 +25,7 @@ function makeTransaction(id: number): Transaction {
 describe('TransactionList', () => {
   it('renders every row', () => {
     const transactions = [makeTransaction(1), makeTransaction(2)]
-    render(<TransactionList transactions={transactions} onEdit={vi.fn()} onDelete={vi.fn()} />)
+    render(<TransactionList transactions={transactions} categories={categories} onEdit={vi.fn()} onDelete={vi.fn()} />)
 
     expect(screen.getByText('Transaction 1')).toBeInTheDocument()
     expect(screen.getByText('Transaction 2')).toBeInTheDocument()
@@ -44,7 +49,7 @@ describe('TransactionList', () => {
             id="transaction-list"
             onRender={(_id, _phase, actualDuration) => durations.push(actualDuration)}
           >
-            <TransactionList transactions={transactions} onEdit={onEdit} onDelete={onDelete} />
+<TransactionList transactions={transactions} categories={categories} onEdit={onEdit} onDelete={onDelete} />
           </Profiler>
         </div>
       )
@@ -62,7 +67,7 @@ describe('TransactionList', () => {
     const onEdit = vi.fn()
     const onDelete = vi.fn()
     render(
-      <TransactionList transactions={[makeTransaction(1)]} onEdit={onEdit} onDelete={onDelete} />,
+      <TransactionList transactions={[makeTransaction(1)]} categories={categories} onEdit={onEdit} onDelete={onDelete} />,
     )
 
     await user.click(screen.getByRole('button', { name: 'Edit' }))
@@ -78,13 +83,14 @@ describe('TransactionList', () => {
     const onDelete = vi.fn()
 
     const { rerender } = render(
-      <TransactionList transactions={transactions} onEdit={onEdit} onDelete={onDelete} />,
+      <TransactionList transactions={transactions} categories={categories} onEdit={onEdit} onDelete={onDelete} />,
     )
     const firstRow = screen.getByText('Transaction 0').closest('tr')
 
     rerender(
       <TransactionList
         transactions={[makeTransaction(100), ...transactions]}
+        categories={categories}
         onEdit={onEdit}
         onDelete={onDelete}
       />,

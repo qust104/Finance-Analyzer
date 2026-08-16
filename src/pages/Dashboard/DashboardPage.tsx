@@ -1,4 +1,5 @@
 import { useBudgets } from '../../shared/hooks/useBudgets'
+import { useCategories } from '../../shared/hooks/useCategories'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { BudgetOverview } from './BudgetOverview'
@@ -17,8 +18,9 @@ export function DashboardPage() {
     isError: budgetsError,
     refetch: refetchBudgets,
   } = useBudgets()
+  const { categories, isPending: categoriesPending } = useCategories()
 
-  if (isPending || budgetsPending) {
+  if (isPending || budgetsPending || categoriesPending) {
     return (
       <section>
         <h1 className="page-title">Dashboard</h1>
@@ -47,9 +49,9 @@ export function DashboardPage() {
       <FinancialSummary transactions={transactions} />
       <div className="dashboard-grid">
         <CashFlowChart transactions={transactions} />
-        <SpendingByCategory transactions={transactions} />
-        <BudgetOverview transactions={transactions} budgets={budgets} />
-        <RecentTransactions transactions={transactions} />
+        <SpendingByCategory transactions={transactions} categories={categories} />
+        <BudgetOverview transactions={transactions} budgets={budgets} categories={categories} />
+        <RecentTransactions transactions={transactions} categories={categories} />
       </div>
       <div className="dashboard-insights">
         <FinancialInsights transactions={transactions} budgets={budgets} />

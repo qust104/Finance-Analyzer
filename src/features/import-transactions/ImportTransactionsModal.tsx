@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { CATEGORY_LABELS, TYPE_LABELS } from '../../entities/transaction/model/types'
+import { categoryLabelOf } from '../../entities/category/model/catalog'
+import type { CategoryDef } from '../../entities/category/model/types'
+import { TYPE_LABELS } from '../../entities/transaction/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import { formatAmount, formatDate } from '../../shared/lib/format'
@@ -12,6 +14,7 @@ import '../../shared/ui/form.css'
 
 interface ImportTransactionsModalProps {
   transactions: readonly Transaction[]
+  categories: readonly CategoryDef[]
   importState: { isPending: boolean; error: string | null }
   onImport: (inputs: readonly TransactionInput[]) => Promise<void>
   onClose: () => void
@@ -22,6 +25,7 @@ const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 
 export function ImportTransactionsModal({
   transactions,
+  categories,
   importState,
   onImport,
   onClose,
@@ -48,7 +52,7 @@ export function ImportTransactionsModal({
     }
     const text = await file.text()
     setFileText(text)
-    setPreview(buildImportPreview(text, transactions))
+    setPreview(buildImportPreview(text, transactions, categories))
   }
 
   const handleImport = async () => {
@@ -56,7 +60,7 @@ export function ImportTransactionsModal({
     try {
       await onImport(preview.valid)
     } catch {
-      setPreview(buildImportPreview(fileText, transactions))
+      setPreview(buildImportPreview(fileText, transactions, categories))
     }
   }
 
@@ -95,6 +99,7 @@ export function ImportTransactionsModal({
             ) : (
               <PreviewTable
                 preview={preview}
+                categories={categories}
                 canImport={canImport}
                 importState={importState}
                 onImport={handleImport}
@@ -110,12 +115,14 @@ export function ImportTransactionsModal({
 
 function PreviewTable({
   preview,
+  categories,
   canImport,
   importState,
   onImport,
   onClose,
 }: {
   preview: ImportPreview
+  categories: readonly CategoryDef[]
   canImport: boolean
   importState: { isPending: boolean; error: string | null }
   onImport: () => void
@@ -185,7 +192,7 @@ function PreviewTable({
                 <tr key={`${transaction.date}-${transaction.description}-${transaction.amount}`}>
                   <td>{formatDate(transaction.date)}</td>
                   <td>{transaction.description}</td>
-                  <td>{CATEGORY_LABELS[transaction.category]}</td>
+                  <td>{categoryLabelOf(categories, transaction.category)}</td>
                   <td>{TYPE_LABELS[transaction.type]}</td>
                   <td>{formatAmount(transaction.amount, transaction.type)}</td>
                 </tr>

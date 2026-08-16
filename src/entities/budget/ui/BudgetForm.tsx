@@ -4,15 +4,15 @@ import type { SubmitHandler } from 'react-hook-form'
 import { budgetSchema } from '../model/budgetSchema'
 import type { BudgetFormValues } from '../model/budgetSchema'
 import type { Budget, BudgetInput } from '../model/types'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '../../transaction/model/types'
-import type { Category } from '../../transaction/model/types'
+import type { CategoryDef } from '../../category/model/types'
 import './BudgetForm.css'
 import '../../../shared/ui/form.css'
 
 interface BudgetFormProps {
   initialValue?: Budget
+  categories: readonly CategoryDef[]
   // Categories that already have a budget and are not available for new ones.
-  usedCategories: Category[]
+  usedCategories: string[]
   submitError?: string | null
   isSubmitting?: boolean
   onSubmit: (input: BudgetInput) => void
@@ -21,6 +21,7 @@ interface BudgetFormProps {
 
 export function BudgetForm({
   initialValue,
+  categories,
   usedCategories,
   submitError,
   isSubmitting,
@@ -40,13 +41,14 @@ export function BudgetForm({
     },
   })
 
-  const availableCategories = ALL_CATEGORIES.filter(
-    (item) => !usedCategories.includes(item) || item === initialValue?.category,
+  const availableCategories = categories.filter(
+    (category) =>
+      !usedCategories.includes(category.key) || category.key === initialValue?.category,
   )
 
   const submit: SubmitHandler<BudgetFormValues> = (values) => {
     onSubmit({
-      category: values.category as Category,
+      category: values.category,
       amount: Number(values.amount),
       period: 'monthly',
     })
@@ -67,9 +69,9 @@ export function BudgetForm({
           aria-describedby={errors.category ? 'budget-category-error' : undefined}
         >
           <option value="">Select category</option>
-          {availableCategories.map((item) => (
-            <option key={item} value={item}>
-              {CATEGORY_LABELS[item]}
+          {availableCategories.map((category) => (
+            <option key={category.key} value={category.key}>
+              {category.label}
             </option>
           ))}
         </select>

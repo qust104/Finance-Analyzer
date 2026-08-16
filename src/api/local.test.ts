@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
+import { BUILTIN_CATEGORIES } from '../entities/category/model/catalog'
 import { handleLocalRequest } from './local'
 
 const validTransaction = {
@@ -109,5 +110,130 @@ describe('local server', () => {
       body: JSON.stringify({ transactions: [] }),
     })
     expect(missingArrays.status).toBe(400)
+  })
+
+  it('lists, creates, edits and deletes categories', () => {
+    const created = handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({
+        label: 'Hobbies',
+        color: '#7c3aed',
+        aliases: ['guitar'],
+      }),
+    })
+    expect(created.status).toBe(201)
+    const key = (created.body as { key: string }).key
+
+    const list = handleLocalRequest('/api/categories')
+    const entries = list.body as Array<{ key: string; builtin: boolean }>
+    expect(entries.some((entry) => entry.key === key && !entry.builtin)).toBe(true)
+
+    const patched = handleLocalRequest(`/api/categories/${key}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ label: 'Hobby', color: '#0ea5e9', aliases: [] }),
+    })
+    expect(patched.status).toBe(200)
+
+    const deleted = handleLocalRequest(`/api/categories/${key}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(204)
+  })
+
+  it('rejects a duplicate or malformed category with 409/400', () => {
+    const payload = JSON.stringify({ label: 'Pets', color: '#059669', aliases: [] })
+    expect(handleLocalRequest('/api/categories', { method: 'POST', body: payload }).status).toBe(201)
+
+    const bad = handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ label: 'Pets', color: 'red', aliases: [] }),
+    })
+    expect(bad.status).toBe(400)
+
+    const duplicate = handleLocalRequest('/api/categories', { method: 'POST', body: payload })
+    expect(duplicate.status).toBe(409)
+  })
+
+  it('locks down built-in categories: 403 on delete, 404 on edit', () => {
+    // transport is never used by the data seeded earlier in this module,
+    // so the in-use guard cannot fire before the built-in lock.
+    const locked = handleLocalRequest('/api/categories/transport', { method: 'DELETE' })
+    expect(locked.status).toBe(403)
+
+    const missing = handleLocalRequest('/api/categories/transport', {
+      method: 'PATCH',
+      body: JSON.stringify({ label: 'Transit', color: '#14b8a6', aliases: [] }),
+    })
+    expect(missing.status).toBe(404)
+  })
+
+  it('refuses to delete a category used by transactions', () => {
+    const created = handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ label: 'Travel', color: '#f43f5e', aliases: [] }),
+    })
+    const key = (created.body as { key: string }).key
+    expect(key).toBe('travel')
+
+    const transaction = handleLocalRequest('/api/transactions', {
+      method: 'POST',
+      body: JSON.stringify({ ...validTransaction, category: 'travel' }),
+    })
+    expect(transaction.status).toBe(201)
+
+    const deleted = handleLocalRequest(`/api/categories/${key}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(409)
+  })
+
+  it('restores the catalogue through PUT /api/data', () => {
+    handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ label: 'Hobbies', color: '#7c3aed', aliases: [] }),
+    })
+
+    const result = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({
+        transactions: [],
+        budgets: [],
+        categories: [
+          { key: 'food', label: 'Food', color: '#f59e0b', aliases: [], builtin: true },
+          { key: 'hobbies', label: 'Hobbies', color: '#7c3aed', aliases: ['guitar'], builtin: false },
+        ],
+      }),
+    })
+    expect(result.status).toBe(200)
+
+    const entries = handleLocalRequest('/api/categories').body as Array<{ key: string }>
+    expect(entries).toHaveLength(BUILTIN_CATEGORIES.length + 1)
+    expect(entries.map((entry) => entry.key)).toContain('hobbies')
+    expect(entries.map((entry) => entry.key)).not.toContain('pets')
+  })
+
+  it('rejects a data payload with malformed categories', () => {
+    const result = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({
+        transactions: [],
+        budgets: [],
+        categories: [{ key: 'x', label: 'X' }],
+      }),
+    })
+    expect(result.status).toBe(400)
+  })
+
+  it('returns 409 when a category is in use by a budget', () => {
+    handleLocalRequest('/api/budgets', {
+      method: 'POST',
+      body: JSON.stringify({ category: 'travel', amount: 1000 }),
+    })
+
+    const created = handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ label: 'Travel', color: '#f43f5e', aliases: [] }),
+    })
+    const key = (created.body as { key: string }).key
+    expect(key).toBe('travel')
+
+    const deleted = handleLocalRequest(`/api/categories/${key}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(409)
   })
 })

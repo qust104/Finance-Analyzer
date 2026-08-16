@@ -1,5 +1,7 @@
 import { isBudget } from '../../entities/budget/model/budgetStorage'
 import type { Budget } from '../../entities/budget/model/types'
+import { isCategoryDef } from '../../entities/category/model/categoryStorage'
+import type { CategoryDef } from '../../entities/category/model/types'
 import { isTransaction } from '../../entities/transaction/model/transactionStorage'
 import type { Transaction } from '../../entities/transaction/model/types'
 
@@ -12,11 +14,13 @@ export interface BackupPayload {
   exportedAt: string
   transactions: Transaction[]
   budgets: Budget[]
+  categories: CategoryDef[]
 }
 
 export function buildExportPayload(
   transactions: readonly Transaction[],
   budgets: readonly Budget[],
+  categories: readonly CategoryDef[] = [],
   exportedAt: Date = new Date(),
 ): BackupPayload {
   return {
@@ -24,6 +28,7 @@ export function buildExportPayload(
     exportedAt: exportedAt.toISOString(),
     transactions: [...transactions],
     budgets: [...budgets],
+    categories: [...categories],
   }
 }
 
@@ -45,6 +50,20 @@ export function parseExportPayload(raw: unknown): ParseBackupResult {
     return { ok: false, error: 'Backup must contain transactions and budgets arrays' }
   }
 
+  // Categories first appeared after some backups were written, so the
+  // field is optional; missing or present-but-valid decide whether the
+  // restore touches the catalogue.
+  const rawCategories = candidate.categories
+  const categories =
+    rawCategories === undefined
+      ? null
+      : Array.isArray(rawCategories) && rawCategories.every(isCategoryDef)
+        ? (rawCategories as CategoryDef[])
+        : undefined
+  if (categories === undefined) {
+    return { ok: false, error: 'Backup contains invalid category rows' }
+  }
+
   const transactions = candidate.transactions.filter(isTransaction)
   const budgets = candidate.budgets.filter(isBudget)
   if (transactions.length !== candidate.transactions.length) {
@@ -61,6 +80,7 @@ export function parseExportPayload(raw: unknown): ParseBackupResult {
       exportedAt: typeof candidate.exportedAt === 'string' ? candidate.exportedAt : '',
       transactions,
       budgets,
+      categories: categories ?? [],
     },
   }
 }

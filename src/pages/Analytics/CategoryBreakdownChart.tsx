@@ -10,18 +10,19 @@ import {
   YAxis,
 } from 'recharts'
 import type { CategoryTrend } from '../../analytics/trends'
-import { CATEGORY_LABELS } from '../../entities/transaction/model/types'
-import type { Category } from '../../entities/transaction/model/types'
-import { CATEGORY_COLORS } from '../../shared/lib/categoryColors'
+import { categoryColorOf, categoryLabelOf } from '../../entities/category/model/catalog'
+import type { CategoryDef } from '../../entities/category/model/types'
 import { formatCurrency } from '../../shared/lib/format'
 import './AnalyticsCharts.css'
 
 interface CategoryBreakdownChartProps {
   data: CategoryTrend[]
+  categories: readonly CategoryDef[]
 }
 
 export const CategoryBreakdownChart = memo(function CategoryBreakdownChart({
   data,
+  categories,
 }: CategoryBreakdownChartProps) {
   if (data.length === 0) {
     return (
@@ -33,9 +34,9 @@ export const CategoryBreakdownChart = memo(function CategoryBreakdownChart({
   }
 
   const rows = data.map((trend) => ({
-    name: CATEGORY_LABELS[trend.category],
+    name: categoryLabelOf(categories, trend.category),
     total: trend.total,
-    fill: CATEGORY_COLORS[trend.category as Category],
+    fill: categoryColorOf(categories, trend.category),
   }))
 
   return (

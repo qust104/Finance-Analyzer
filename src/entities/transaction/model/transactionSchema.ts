@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { ALL_CATEGORIES } from './types'
 import type { Category } from './types'
 
 // One schema is the single source of truth for validation rules:
@@ -24,9 +23,7 @@ export const transactionSchema = z.object({
   type: z.enum(['income', 'expense'], { error: 'Type is required' }),
   category: z
     .string()
-    .refine((value) => (ALL_CATEGORIES as readonly string[]).includes(value), {
-      error: 'Category is required',
-    })
+    .min(1, { error: 'Category is required' })
     // The form sends a raw string; the validated output is the domain
     // type, so the API layer receives a ready TransactionInput.
     .transform((value) => value as Category),

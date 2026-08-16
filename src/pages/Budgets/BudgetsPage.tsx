@@ -8,6 +8,7 @@ import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { ReportMonthBanner } from '../../shared/ui/ReportMonthBanner'
 import { Toast } from '../../shared/ui/Toast'
 import { useBudgets } from '../../shared/hooks/useBudgets'
+import { useCategories } from '../../shared/hooks/useCategories'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useReportMonth } from '../../shared/hooks/useReportMonth'
 import { useUndoableDelete } from '../../shared/hooks/useUndoableDelete'
@@ -19,6 +20,7 @@ export function BudgetsPage() {
   const { budgets, addBudget, updateBudget, removeBudget, isPending, isError, refetch, saveState } =
     useBudgets()
   const { transactions } = useTransactions()
+  const { categories } = useCategories()
   const editing = useUiStore((state) => state.budgetForm)
   const openBudgetForm = useUiStore((state) => state.openBudgetForm)
   const closeBudgetForm = useUiStore((state) => state.closeBudgetForm)
@@ -105,6 +107,7 @@ export function BudgetsPage() {
             <BudgetProgress
               key={usage.budget.id}
               usage={usage}
+              categories={categories}
               onEdit={handleEdit}
               onDelete={requestDelete}
             />
@@ -116,6 +119,7 @@ export function BudgetsPage() {
         <Modal title={editing === 'new' ? 'Add budget' : 'Edit budget'} onClose={closeBudgetForm}>
           <BudgetForm
             initialValue={editing === 'new' ? undefined : editing}
+            categories={categories}
             usedCategories={usedCategories}
             submitError={saveState.error}
             isSubmitting={saveState.isPending}

@@ -9,6 +9,9 @@ import { resolveReportMonth } from '../analytics/budgets'
 import { generateInsights } from '../analytics/insights'
 import { isBudget } from '../entities/budget/model/budgetStorage'
 import { createLocalStorageBudgetRepository } from '../entities/budget/model/budgetRepository'
+import { createLocalStorageCategoryRepository } from '../entities/category/model/categoryRepository'
+import { categorySchema } from '../entities/category/model/categorySchema'
+import { isCategoryDef } from '../entities/category/model/categoryStorage'
 import { createLocalStorageTransactionRepository } from '../entities/transaction/model/repository'
 import { isTransaction } from '../entities/transaction/model/transactionStorage'
 import { transactionSchema } from '../entities/transaction/model/transactionSchema'
@@ -23,6 +26,7 @@ export interface LocalResponse {
 // the real fetch path behind MSW; both share this single source.
 const transactions = createLocalStorageTransactionRepository()
 const budgets = createLocalStorageBudgetRepository()
+const categories = createLocalStorageCategoryRepository()
 
 function parseTransactionInput(body: unknown) {
   const parsed = transactionSchema.safeParse(body)
@@ -66,9 +70,11 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
 
   const params =
     matchRoute(normalized, 'api/transactions/:id') ??
-    matchRoute(normalized, 'api/budgets/:id')
+    matchRoute(normalized, 'api/budgets/:id') ??
+    matchRoute(normalized, 'api/categories/:key')
   const isList = normalized === '/api/transactions'
   const isBudgets = normalized === '/api/budgets'
+  const isCategories = normalized === '/api/categories'
   const isAnalytics = normalized === '/api/analytics'
   const isData = normalized === '/api/data'
   const method = init?.method?.toUpperCase() ?? 'GET'
@@ -136,6 +142,54 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     }
   }
 
+  if (isCategories) {
+    if (method === 'GET') return { status: 200, body: categories.getAll() }
+    if (method === 'POST') {
+      const parsed = categorySchema.safeParse(parseBody(init))
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? 'Invalid category data'
+        return { status: 400, body: { error: message } }
+      }
+      try {
+        return { status: 201, body: categories.create(parsed.data) }
+      } catch (error) {
+        return { status: 409, body: { error: (error as Error).message } }
+      }
+    }
+  }
+
+  if (normalized.startsWith('/api/categories') && !isCategories && params && params.key) {
+    const key = String(params.key)
+    if (method === 'PATCH') {
+      const parsed = categorySchema.safeParse(parseBody(init))
+      if (!parsed.success) {
+        const message = parsed.error.issues[0]?.message ?? 'Invalid category data'
+        return { status: 400, body: { error: message } }
+      }
+      try {
+        return { status: 200, body: categories.update(key, parsed.data) }
+      } catch (error) {
+        return { status: 404, body: { error: (error as Error).message } }
+      }
+    }
+    if (method === 'DELETE') {
+      const inUseByTransactions = transactions.getAll().some((transaction) => transaction.category === key)
+      const inUseByBudgets = budgets.getAll().some((budget) => budget.category === key)
+      if (inUseByTransactions || inUseByBudgets) {
+        return {
+          status: 409,
+          body: { error: 'This category is used by transactions or budgets' },
+        }
+      }
+      try {
+        categories.delete(key)
+        return { status: 204 }
+      } catch (error) {
+        return { status: 403, body: { error: (error as Error).message } }
+      }
+    }
+  }
+
   if (isAnalytics && method === 'GET') {
     const all = transactions.getAll()
     const month = resolveReportMonth(all).month
@@ -150,13 +204,15 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
           savings: calculateSavings(all),
           savingsRate: calculateSavingsRate(all),
         },
-        insights: generateInsights(all, budgets.getAll(), month),
+        insights: generateInsights(all, budgets.getAll(), month, categories.getAll()),
       },
     }
   }
 
   if (isData && method === 'PUT') {
-    const body = parseBody(init) as { transactions?: unknown; budgets?: unknown } | undefined
+    const body = parseBody(init) as
+      | { transactions?: unknown; budgets?: unknown; categories?: unknown }
+      | undefined
     const nextTransactions = Array.isArray(body?.transactions) ? body.transactions : null
     const nextBudgets = Array.isArray(body?.budgets) ? body.budgets : null
     if (nextTransactions === null || nextBudgets === null) {
@@ -165,11 +221,30 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     if (!nextTransactions.every(isTransaction) || !nextBudgets.every(isBudget)) {
       return { status: 400, body: { error: 'Invalid data in payload' } }
     }
+    // Backups written before categories existed carry no field:
+    // leave the catalogue untouched then, replacing is opt-in.
+    // The payload holds the full catalogue (built-in + custom), so rows
+    // are validated as generic definitions; replaceAll keeps custom only.
+    const nextCategories =
+      body?.categories === undefined
+        ? null
+        : Array.isArray(body.categories) && body.categories.every(isCategoryDef)
+          ? body.categories
+          : undefined
+    if (nextCategories === undefined) {
+      return { status: 400, body: { error: 'Invalid categories in payload' } }
+    }
     transactions.replaceAll(nextTransactions)
     budgets.replaceAll(nextBudgets)
+    if (nextCategories !== null) {
+      categories.replaceAll(nextCategories)
+    }
     return {
       status: 200,
-      body: { transactions: nextTransactions.length, budgets: nextBudgets.length },
+      body: {
+        transactions: nextTransactions.length,
+        budgets: nextBudgets.length,
+      },
     }
   }
 

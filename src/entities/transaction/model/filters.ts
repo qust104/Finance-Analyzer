@@ -1,4 +1,3 @@
-import { ALL_CATEGORIES } from './types'
 import type { Category, Transaction, TransactionType } from './types'
 
 export interface TransactionFilters {
@@ -22,7 +21,7 @@ export const DEFAULT_FILTERS: TransactionFilters = {
 const MONTH_PATTERN = /^\d{4}-\d{2}$/
 
 function isCategory(value: string): value is Category {
-  return (ALL_CATEGORIES as readonly string[]).includes(value)
+  return value.length > 0
 }
 
 // URL is the single source of truth for filtering, so unknown or

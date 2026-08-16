@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { calculateBudgetUsage } from '../../analytics/budgets'
 import type { Budget } from '../../entities/budget/model/types'
+import type { CategoryDef } from '../../entities/category/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 import { BudgetProgress } from '../../entities/budget/ui/BudgetProgress'
 import { useReportMonth } from '../../shared/hooks/useReportMonth'
@@ -11,11 +12,13 @@ import './BudgetOverview.css'
 interface BudgetOverviewProps {
   transactions: readonly Transaction[]
   budgets: readonly Budget[]
+  categories: readonly CategoryDef[]
 }
 
 export const BudgetOverview = memo(function BudgetOverview({
   transactions,
   budgets,
+  categories,
 }: BudgetOverviewProps) {
   const { month, isFallback } = useReportMonth(transactions)
   const usages = useMemo(
@@ -42,7 +45,9 @@ export const BudgetOverview = memo(function BudgetOverview({
           </Link>
         </p>
       ) : (
-        usages.map((usage) => <BudgetProgress key={usage.budget.id} usage={usage} />)
+        usages.map((usage) => (
+          <BudgetProgress key={usage.budget.id} usage={usage} categories={categories} />
+        ))
       )}
     </div>
   )

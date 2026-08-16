@@ -1,4 +1,3 @@
-import { ALL_CATEGORIES } from './types'
 import type { Transaction } from './types'
 
 const STORAGE_KEY = 'finance-analyzer.transactions'
@@ -21,7 +20,7 @@ export function isTransaction(value: unknown): value is Transaction {
     candidate.amount > 0 &&
     (candidate.type === 'income' || candidate.type === 'expense') &&
     typeof candidate.category === 'string' &&
-    (ALL_CATEGORIES as readonly string[]).includes(candidate.category) &&
+    candidate.category.length > 0 &&
     typeof candidate.description === 'string'
   )
 }

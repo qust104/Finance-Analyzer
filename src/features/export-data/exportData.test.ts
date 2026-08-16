@@ -6,6 +6,7 @@ import {
   parseExportPayload,
 } from './exportData'
 import type { Budget } from '../../entities/budget/model/types'
+import type { CategoryDef } from '../../entities/category/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 
 const transactions: Transaction[] = [
@@ -21,14 +22,52 @@ const transactions: Transaction[] = [
 
 const budgets: Budget[] = [{ id: 'b1', category: 'food', amount: 5000, period: 'monthly' }]
 
+const categories: CategoryDef[] = [
+  {
+    key: 'hobbies',
+    label: 'Hobbies',
+    color: '#7c3aed',
+    aliases: ['guitar'],
+    builtin: false,
+  },
+]
+
 describe('backup payload', () => {
   it('round-trips a valid payload', () => {
-    const payload = buildExportPayload(transactions, budgets, new Date('2026-08-16T10:00:00Z'))
+    const payload = buildExportPayload(
+      transactions,
+      budgets,
+      categories,
+      new Date('2026-08-16T10:00:00Z'),
+    )
     const parsed = parseExportPayload(payload)
 
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
     expect(parsed.value).toEqual(payload)
+  })
+
+  it('round-trips a payload without a categories field', () => {
+    const payload = buildExportPayload(transactions, budgets)
+    const legacy: Record<string, unknown> = { ...payload }
+    delete legacy.categories
+    const parsed = parseExportPayload(legacy)
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    expect(parsed.value).toEqual(payload)
+  })
+
+  it('rejects a payload with invalid category rows', () => {
+    const payload = buildExportPayload(transactions, budgets)
+    const parsed = parseExportPayload({
+      ...payload,
+      categories: [{ key: 'hobbies', label: 'Hobbies', aliases: [], builtin: false }],
+    })
+
+    expect(parsed.ok).toBe(false)
+    if (parsed.ok) return
+    expect(parsed.error).toContain('invalid category')
   })
 
   it('rejects a payload with an unknown version', () => {

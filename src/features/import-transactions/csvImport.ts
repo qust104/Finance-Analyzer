@@ -1,5 +1,6 @@
+import { resolveCategoryKey } from '../../entities/category/model/catalog'
+import type { CategoryDef } from '../../entities/category/model/types'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
-import { ALL_CATEGORIES } from '../../entities/transaction/model/types'
 import type { Category, Transaction, TransactionType } from '../../entities/transaction/model/types'
 import { parseCsv } from './parseCsv'
 
@@ -20,32 +21,6 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 // Imported files are untrusted input: without limits a single file could
 // freeze the tab while the synchronous parser walks millions of rows.
 export const MAX_IMPORT_ROWS = 10_000
-
-// CSV exports rarely match our canonical values exactly:
-// "Food", "FOOD", "еда" and "groceries" all mean the same category.
-const CATEGORY_ALIASES: Record<string, Category> = {
-  еда: 'food',
-  продукты: 'food',
-  groceries: 'food',
-  grocery: 'food',
-  транспорт: 'transport',
-  покупки: 'shopping',
-  шоппинг: 'shopping',
-  shopping: 'shopping',
-  развлечения: 'entertainment',
-  досуг: 'entertainment',
-  entertainment: 'entertainment',
-  здоровье: 'health',
-  медицина: 'health',
-  жильё: 'housing',
-  аренда: 'housing',
-  housing: 'housing',
-  зарплата: 'salary',
-  зп: 'salary',
-  salary: 'salary',
-  прочее: 'other',
-  другое: 'other',
-}
 
 export function parseCsvDate(raw: string): string | null {
   if (!ISO_DATE.test(raw)) return null
@@ -69,17 +44,21 @@ export function parseCsvType(raw: string): TransactionType | null {
   return trimmed === 'income' || trimmed === 'expense' ? trimmed : null
 }
 
-export function parseCsvCategory(raw: string): Category | null {
-  const key = raw.trim().toLowerCase()
-  if ((ALL_CATEGORIES as readonly string[]).includes(key)) {
-    return key as Category
-  }
-  return CATEGORY_ALIASES[key] ?? null
+// CSV exports rarely match our canonical keys exactly: "Food", "FOOD",
+// "еда" and "groceries" all mean the same category. Matching runs against
+// the live catalogue (keys, display labels, per-category aliases), so a
+// custom category resolves through the aliases the user configured.
+export function parseCsvCategory(categories: readonly CategoryDef[], raw: string): Category | null {
+  return resolveCategoryKey(categories, raw)
 }
 
 // CSV data comes from outside and cannot be trusted: every cell must be
 // re-validated even though the manual form already validates its input.
-export function normalizeCsvRow(cells: string[], headers: string[]): NormalizeRowResult {
+export function normalizeCsvRow(
+  cells: string[],
+  headers: string[],
+  categories: readonly CategoryDef[],
+): NormalizeRowResult {
   const cell = (name: string) => cells[headers.indexOf(name)] ?? ''
   const errors: string[] = []
 
@@ -87,7 +66,7 @@ export function normalizeCsvRow(cells: string[], headers: string[]): NormalizeRo
   const rawDescription = cell('description').trim()
   const amount = parseCsvAmount(cell('amount'))
   const type = parseCsvType(cell('type'))
-  const category = parseCsvCategory(cell('category'))
+  const category = parseCsvCategory(categories, cell('category'))
 
   const date = parseCsvDate(rawDate)
   if (date === null) {
@@ -135,7 +114,11 @@ export function transactionFingerprint(transaction: {
   return `${transaction.date}|${transaction.amount}|${transaction.description.toLowerCase()}`
 }
 
-export function buildImportPreview(text: string, existing: readonly Transaction[]): ImportPreview {
+export function buildImportPreview(
+  text: string,
+  existing: readonly Transaction[],
+  categories: readonly CategoryDef[],
+): ImportPreview {
   const parsed = parseCsv(text)
   const fileErrors: string[] = []
 
@@ -158,7 +141,7 @@ export function buildImportPreview(text: string, existing: readonly Transaction[
 
   const normalized = parsed.rows.map((entry) => ({
     row: entry.row,
-    result: normalizeCsvRow(entry.cells, parsed.headers),
+    result: normalizeCsvRow(entry.cells, parsed.headers, categories),
   }))
 
   const fileCount = new Map<string, number>()
