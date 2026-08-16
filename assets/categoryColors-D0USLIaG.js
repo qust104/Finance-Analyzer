@@ -1,0 +1,1 @@
+var e={salary:`#22c55e`,food:`#f59e0b`,transport:`#3b82f6`,shopping:`#8b5cf6`,entertainment:`#ec4899`,health:`#10b981`,housing:`#f97316`,other:`#94a3b8`};export{e as t};
