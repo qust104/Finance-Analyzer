@@ -15,6 +15,7 @@ export interface TransactionRepository {
   create(input: TransactionInput): Transaction
   update(id: string, input: TransactionInput): Transaction
   delete(id: string): void
+  replaceAll(next: readonly Transaction[]): void
 }
 
 export function generateId(): string {
@@ -57,6 +58,11 @@ function createTransactionRepository(
 
     delete(id) {
       transactions = transactions.filter((transaction) => transaction.id !== id)
+      persist(transactions)
+    },
+
+    replaceAll(next) {
+      transactions = [...next]
       persist(transactions)
     },
   }

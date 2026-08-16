@@ -1,0 +1,50 @@
+.analytics-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  margin-bottom: 16px;
+}
+
+.analytics-card__title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.analytics-card__empty {
+  margin: 8px 0 0;
+  color: #5f6479;
+}
+
+.analytics-chart {
+  margin-top: 8px;
+}
+
+.month-comparison__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.month-comparison__table th,
+.month-comparison__table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid #ececf1;
+}
+
+.month-comparison__table th[scope='row'] {
+  font-weight: 500;
+  color: #5f6479;
+}
+
+.month-comparison__table td {
+  font-variant-numeric: tabular-nums;
+}
+
+.month-comparison__delta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #5f6479;
+}

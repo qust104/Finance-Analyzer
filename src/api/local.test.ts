@@ -74,4 +74,40 @@ describe('local server', () => {
     const result = handleLocalRequest('/api/nope')
     expect(result.status).toBe(404)
   })
+
+  it('replaces all data through PUT /api/data', () => {
+    const result = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({
+        transactions: [
+          { id: 'x1', date: '2026-01-05', amount: 42, category: 'food', type: 'expense', description: 'Tea' },
+        ],
+        budgets: [
+          { id: 'x2', category: 'food', amount: 999, period: 'monthly' },
+        ],
+      }),
+    })
+    expect(result.status).toBe(200)
+
+    const transactions = handleLocalRequest('/api/transactions').body as unknown[]
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0]).toMatchObject({ id: 'x1', amount: 42 })
+  })
+
+  it('rejects a malformed data payload with 400', () => {
+    const bad = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({
+        transactions: [{ id: 'y', date: 'nope', amount: 5, category: 'food', type: 'expense', description: 'X' }],
+        budgets: [],
+      }),
+    })
+    expect(bad.status).toBe(400)
+
+    const missingArrays = handleLocalRequest('/api/data', {
+      method: 'PUT',
+      body: JSON.stringify({ transactions: [] }),
+    })
+    expect(missingArrays.status).toBe(400)
+  })
 })

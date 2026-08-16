@@ -6,9 +6,11 @@ import type { BudgetUsage } from '../../analytics/budgets'
 import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { ReportMonthBanner } from '../../shared/ui/ReportMonthBanner'
+import { Toast } from '../../shared/ui/Toast'
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useReportMonth } from '../../shared/hooks/useReportMonth'
+import { useUndoableDelete } from '../../shared/hooks/useUndoableDelete'
 import { useUiStore } from '../../shared/store/uiStore'
 import './BudgetsPage.css'
 import '../../shared/ui/form.css'
@@ -22,6 +24,13 @@ export function BudgetsPage() {
   const closeBudgetForm = useUiStore((state) => state.closeBudgetForm)
 
   const { month, isFallback } = useReportMonth(transactions)
+  const { requestDelete, restorePending, clearUndo, pendingUndo } = useUndoableDelete({
+    message: 'Budget deleted',
+    remove: removeBudget,
+    find: (id) => budgets.find((budget) => budget.id === id),
+    restore: (budget) =>
+      addBudget({ category: budget.category, amount: budget.amount, period: budget.period }),
+  })
   const usages = calculateBudgetUsage(transactions, budgets, month)
   const usedCategories = budgets.map((budget) => budget.category)
 
@@ -97,7 +106,7 @@ export function BudgetsPage() {
               key={usage.budget.id}
               usage={usage}
               onEdit={handleEdit}
-              onDelete={removeBudget}
+              onDelete={requestDelete}
             />
           ))}
         </div>
@@ -114,6 +123,14 @@ export function BudgetsPage() {
             onCancel={closeBudgetForm}
           />
         </Modal>
+      )}
+
+      {pendingUndo !== null && (
+        <Toast
+          message={pendingUndo.message}
+          onUndo={() => restorePending(pendingUndo.item)}
+          onClose={clearUndo}
+        />
       )}
     </section>
   )

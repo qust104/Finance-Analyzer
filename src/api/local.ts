@@ -7,8 +7,10 @@ import {
 } from '../analytics/calculations'
 import { resolveReportMonth } from '../analytics/budgets'
 import { generateInsights } from '../analytics/insights'
+import { isBudget } from '../entities/budget/model/budgetStorage'
 import { createLocalStorageBudgetRepository } from '../entities/budget/model/budgetRepository'
 import { createLocalStorageTransactionRepository } from '../entities/transaction/model/repository'
+import { isTransaction } from '../entities/transaction/model/transactionStorage'
 import { transactionSchema } from '../entities/transaction/model/transactionSchema'
 
 export interface LocalResponse {
@@ -68,6 +70,7 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
   const isList = normalized === '/api/transactions'
   const isBudgets = normalized === '/api/budgets'
   const isAnalytics = normalized === '/api/analytics'
+  const isData = normalized === '/api/data'
   const method = init?.method?.toUpperCase() ?? 'GET'
 
   if (normalized.startsWith('/api/transactions') && !isList && params) {
@@ -149,6 +152,24 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
         },
         insights: generateInsights(all, budgets.getAll(), month),
       },
+    }
+  }
+
+  if (isData && method === 'PUT') {
+    const body = parseBody(init) as { transactions?: unknown; budgets?: unknown } | undefined
+    const nextTransactions = Array.isArray(body?.transactions) ? body.transactions : null
+    const nextBudgets = Array.isArray(body?.budgets) ? body.budgets : null
+    if (nextTransactions === null || nextBudgets === null) {
+      return { status: 400, body: { error: 'Expected { transactions, budgets } arrays' } }
+    }
+    if (!nextTransactions.every(isTransaction) || !nextBudgets.every(isBudget)) {
+      return { status: 400, body: { error: 'Invalid data in payload' } }
+    }
+    transactions.replaceAll(nextTransactions)
+    budgets.replaceAll(nextBudgets)
+    return {
+      status: 200,
+      body: { transactions: nextTransactions.length, budgets: nextBudgets.length },
     }
   }
 

@@ -90,6 +90,26 @@ describe('transactions page', () => {
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(rowsBefore - 1))
   })
 
+  it('restores a deleted transaction through the undo toast', async () => {
+    const user = userEvent.setup()
+    await renderPage()
+
+    const firstRow = screen.getAllByRole('row')[1]
+    const deletedDescription = within(firstRow).getAllByText(/./)[0].textContent
+    const rowsBefore = screen.getAllByRole('row').length
+
+    await user.click(within(firstRow).getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(rowsBefore - 1))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Transaction deleted')
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+
+    expect(
+      await screen.findAllByText(deletedDescription ?? '', undefined, { timeout: 4000 }),
+    ).not.toHaveLength(0)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
   it('imports a CSV file and skips duplicates', async () => {
     const user = userEvent.setup()
     await renderPage()

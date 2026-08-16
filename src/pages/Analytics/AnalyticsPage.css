@@ -1,0 +1,43 @@
+.analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.analytics-summary__item {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analytics-summary__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #82869c;
+}
+
+.analytics-summary__value {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-summary__value--income {
+  color: #1e8e3e;
+}
+
+.analytics-summary__value--expenses {
+  color: #d93025;
+}
+
+@media (max-width: 980px) {
+  .analytics-summary {
+    grid-template-columns: 1fr;
+  }
+}

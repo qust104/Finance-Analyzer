@@ -1,0 +1,72 @@
+.settings-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+}
+
+.settings-card__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settings-card__hint {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #5f6479;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.settings-actions__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #d4d7e2;
+  background: #f8f9fc;
+  color: #1c1f2e;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-actions__button:hover:not(:disabled) {
+  background: #eef0f6;
+}
+
+.settings-actions__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settings-actions__button--secondary {
+  background: #ffffff;
+}
+
+.settings-actions__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.settings-message {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.settings-message--error {
+  color: #d93025;
+}
+
+.settings-message--success {
+  color: #1e8e3e;
+}

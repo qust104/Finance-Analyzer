@@ -6,6 +6,7 @@ export interface BudgetRepository {
   create(input: BudgetInput): Budget
   update(id: string, input: BudgetInput): Budget
   delete(id: string): void
+  replaceAll(next: readonly Budget[]): void
 }
 
 function generateId(): string {
@@ -45,6 +46,11 @@ function createBudgetRepository(
 
     delete(id) {
       budgets = budgets.filter((budget) => budget.id !== id)
+      persist(budgets)
+    },
+
+    replaceAll(next) {
+      budgets = [...next]
       persist(budgets)
     },
   }

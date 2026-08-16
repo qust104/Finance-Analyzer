@@ -11,8 +11,10 @@ import { TransactionFilters } from '../../entities/transaction/ui/TransactionFil
 import { TransactionList } from '../../entities/transaction/ui/TransactionList'
 import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
+import { Toast } from '../../shared/ui/Toast'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { useTransactionFilters } from '../../shared/hooks/useTransactionFilters'
+import { useUndoableDelete } from '../../shared/hooks/useUndoableDelete'
 import { useUiStore } from '../../shared/store/uiStore'
 import { ImportTransactionsModal } from '../../features/import-transactions/ImportTransactionsModal'
 import './TransactionsPage.css'
@@ -32,6 +34,19 @@ export function TransactionsPage() {
     importState,
   } = useTransactions()
   const { filters, updateFilters, resetFilters } = useTransactionFilters()
+  const { requestDelete, restorePending, clearUndo, pendingUndo } = useUndoableDelete({
+    message: 'Transaction deleted',
+    remove: removeTransaction,
+    find: (id) => transactions.find((transaction) => transaction.id === id),
+    restore: (transaction) =>
+      addTransaction({
+        date: transaction.date,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        description: transaction.description,
+      }),
+  })
   const editing = useUiStore((state) => state.transactionForm)
   const openTransactionForm = useUiStore((state) => state.openTransactionForm)
   const closeTransactionForm = useUiStore((state) => state.closeTransactionForm)
@@ -150,7 +165,7 @@ export function TransactionsPage() {
           <TransactionList
             transactions={filteredTransactions}
             onEdit={openTransactionForm}
-            onDelete={removeTransaction}
+            onDelete={requestDelete}
           />
           <ul className="transaction-cards">
             {filteredTransactions.map((transaction) => (
@@ -158,7 +173,7 @@ export function TransactionsPage() {
                 <TransactionCard
                   transaction={transaction}
                   onEdit={openTransactionForm}
-                  onDelete={removeTransaction}
+                  onDelete={requestDelete}
                 />
               </li>
             ))}
@@ -187,6 +202,14 @@ export function TransactionsPage() {
           importState={importState}
           onImport={handleImport}
           onClose={closeImportModal}
+        />
+      )}
+
+      {pendingUndo !== null && (
+        <Toast
+          message={pendingUndo.message}
+          onUndo={() => restorePending(pendingUndo.item)}
+          onClose={clearUndo}
         />
       )}
     </section>
