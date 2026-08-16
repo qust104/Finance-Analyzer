@@ -8,6 +8,7 @@ Personal finance SPA: React 19 + TypeScript + Vite 8 (Rolldown). No real backend
 - `npm run build` — `tsc -b && vite build` (typecheck is part of build)
 - `npm run preview` — serve built app
 - `npm run test` — Vitest (unit + integration + RTL)
+- `npm run test:e2e` — Playwright `e2e/` against a fresh production build (runs `npm run preview`)
 - `npm run lint` — ESLint
 - `npm run format` — Prettier
 - `npx vitest run <path>` — single test file; integration tests need jsdom + MSW handlers
@@ -21,6 +22,8 @@ Personal finance SPA: React 19 + TypeScript + Vite 8 (Rolldown). No real backend
 - `src/shared/lib/monitoring.ts` — error reporting core (reporters + window listeners)
 - `src/shared/ui/` — Modal (focus trap), ErrorBoundary, AsyncStates, PageContainer
 - `src/pages/*` — lazy-loaded routes (`src/app/router.tsx`)
+- `e2e/` + `playwright.config.ts` — Playwright E2E (chromium only), config lives in `tsconfig.node.json` scope
+- `src/data/seed.ts` — 30 demo transactions seeded on first run (empty localStorage); E2E asserts against the seeded data
 
 ## Conventions
 
@@ -33,13 +36,14 @@ Personal finance SPA: React 19 + TypeScript + Vite 8 (Rolldown). No real backend
 
 ## QA gate (run before finishing)
 
-`npx vitest run` → all green · `npm run lint` · `npm run build` (includes typecheck)
+`npx vitest run` → all green · `npm run lint` · `npm run build` (includes typecheck) · `npm run test:e2e` when Playwright-relevant files changed
 
 ## Gotchas
 
 - MSW is intentional only in dev/tests: production runs the "server" inline — `handleLocalRequest` in `src/api/local.ts` (shared with `src/mocks/handlers.ts`, which delegates into it). No service worker in prod builds; `main.tsx` starts the worker only when `!import.meta.env.PROD`
 - The worker only intercepts requests inside its scope: API paths and MSW handlers must both be prefixed with the deployment base (`resolveUrl` in `src/api/request.ts`, `API_BASE` in `src/mocks/handlers.ts`)
 - GitHub Pages CDN caches everything for 10 min (`max-age=600`) — a fresh deploy briefly 404s old asset URLs; a hard reload fixes it. The deploy workflow caches `dist` so old hashed assets survive deploys
+- E2E: `vite preview` serves the dist root, so tests run against builds made *without* `--base`; deploy builds (with `/Finance-Analyzer/` base) are not previewable locally. Vitest's `exclude` must keep `e2e/` out (specs would otherwise be collected)
 - RTL needs `afterEach(cleanup)` — already set in `src/test/setup.ts`
 - `PromiseRejectionEvent` in jsdom requires the `promise` init property
 - jsdom URL is `http://localhost` so MSW handlers match in tests
