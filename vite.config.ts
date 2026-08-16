@@ -85,6 +85,16 @@ export default defineConfig({
   },
   test: {
     setupFiles: ['./src/test/setup.ts'],
+    // E2E specs live in e2e/ and are owned by Playwright, not Vitest.
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*',
+      'e2e/**',
+      'test-results/**',
+    ],
     // Integration and performance tests are slow under parallel load.
     testTimeout: 10_000,
     // Integration tests run in jsdom and fetch against the same origin
