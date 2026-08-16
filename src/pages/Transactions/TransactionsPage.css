@@ -15,11 +15,11 @@
 }
 
 .empty-state {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 48px 24px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .empty-state__title {
@@ -30,6 +30,6 @@
 
 .empty-state__hint {
   margin: 0 0 16px;
-  color: #82869c;
+  color: var(--text-muted);
   font-size: 14px;
 }

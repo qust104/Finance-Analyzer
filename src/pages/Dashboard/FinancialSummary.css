@@ -8,31 +8,31 @@
 }
 
 .stat-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-card__label {
   font-size: 13px;
   font-weight: 600;
-  color: #82869c;
+  color: var(--text-muted);
 }
 
 .stat-card__value {
   font-size: 22px;
   font-weight: 700;
-  color: #1c1e26;
+  color: var(--text);
 }
 
 .stat-card--positive .stat-card__value {
-  color: #1e8e3e;
+  color: var(--income);
 }
 
 .stat-card--negative .stat-card__value {
-  color: #d93025;
+  color: var(--expense);
 }

@@ -13,7 +13,7 @@
 .recurring-intro {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #82869c;
+  color: var(--text-muted);
   max-width: 560px;
 }
 
@@ -31,9 +31,9 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .recurring-list__item--paused {
@@ -74,8 +74,8 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #82869c;
-  background: #f2f3f7;
+  color: var(--text-muted);
+  background: var(--surface-hover);
   padding: 2px 6px;
   border-radius: 6px;
   flex-shrink: 0;
@@ -88,16 +88,16 @@
 }
 
 .recurring-list__amount--income {
-  color: #0f9d58;
+  color: var(--income);
 }
 
 .recurring-list__amount--expense {
-  color: #b3261e;
+  color: var(--expense);
 }
 
 .recurring-list__meta {
   font-size: 12px;
-  color: #82869c;
+  color: var(--text-muted);
   margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;

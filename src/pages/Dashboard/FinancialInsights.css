@@ -13,8 +13,8 @@
   gap: 12px;
   padding: 14px;
   border-radius: 10px;
-  background: #fafbfd;
-  border: 1px solid #ececf1;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-soft);
 }
 
 .insight__icon {
@@ -31,33 +31,33 @@
 }
 
 .insight__icon--warning {
-  background: #d93025;
+  background: var(--expense);
 }
 
 .insight__icon--positive {
-  background: #1e8e3e;
+  background: var(--income);
 }
 
 .insight__icon--info {
-  background: #4c5fd5;
+  background: var(--accent);
 }
 
 .insight__title {
   margin: 0 0 4px;
   font-size: 14px;
   font-weight: 700;
-  color: #1c1e26;
+  color: var(--text);
 }
 
 .insight__description {
   margin: 0;
   font-size: 13px;
-  color: #3a3e52;
+  color: var(--text-secondary);
   line-height: 1.45;
 }
 
 .insights-empty {
   margin: 12px 0 4px;
-  color: #82869c;
+  color: var(--text-muted);
   font-size: 14px;
 }

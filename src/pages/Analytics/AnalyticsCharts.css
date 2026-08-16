@@ -1,8 +1,8 @@
 .analytics-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
   margin-bottom: 16px;
 }
 
@@ -14,7 +14,7 @@
 
 .analytics-card__empty {
   margin: 8px 0 0;
-  color: #5f6479;
+  color: var(--text-faint);
 }
 
 .analytics-chart {
@@ -31,12 +31,12 @@
 .month-comparison__table td {
   padding: 6px 8px;
   text-align: left;
-  border-bottom: 1px solid #ececf1;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .month-comparison__table th[scope='row'] {
   font-weight: 500;
-  color: #5f6479;
+  color: var(--text-faint);
 }
 
 .month-comparison__table td {
@@ -46,5 +46,5 @@
 .month-comparison__delta {
   margin: 10px 0 0;
   font-size: 13px;
-  color: #5f6479;
+  color: var(--text-faint);
 }

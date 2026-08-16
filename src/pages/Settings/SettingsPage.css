@@ -1,8 +1,8 @@
 .settings-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-card__title {
@@ -14,7 +14,7 @@
 .settings-card__hint {
   margin: 0 0 16px;
   font-size: 14px;
-  color: #5f6479;
+  color: var(--text-faint);
 }
 
 .settings-actions {
@@ -28,16 +28,16 @@
   align-items: center;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid #d4d7e2;
-  background: #f8f9fc;
-  color: #1c1f2e;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .settings-actions__button:hover:not(:disabled) {
-  background: #eef0f6;
+  background: var(--surface-hover-strong);
 }
 
 .settings-actions__button:disabled {
@@ -46,7 +46,7 @@
 }
 
 .settings-actions__button--secondary {
-  background: #ffffff;
+  background: var(--surface);
 }
 
 .settings-actions__file {
@@ -64,9 +64,9 @@
 }
 
 .settings-message--error {
-  color: #d93025;
+  color: var(--expense);
 }
 
 .settings-message--success {
-  color: #1e8e3e;
+  color: var(--income);
 }

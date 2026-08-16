@@ -8,17 +8,17 @@
 .skeleton-line {
   height: 48px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #ececf1 25%, #f7f8fb 50%, #ececf1 75%);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-hover) 50%, var(--surface-2) 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.4s infinite;
 }
 
 .error-state {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 48px 24px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .error-state__title {
@@ -29,7 +29,7 @@
 
 .error-state__hint {
   margin: 0 0 16px;
-  color: #82869c;
+  color: var(--text-muted);
   font-size: 14px;
 }
 

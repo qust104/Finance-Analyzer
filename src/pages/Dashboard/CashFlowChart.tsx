@@ -48,10 +48,10 @@ export const CashFlowChart = memo(function CashFlowChart({
       <div className="cash-flow-chart">
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ececf1" />
-            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#82869c' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-soft)" />
+            <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
             <YAxis
-              tick={{ fontSize: 12, fill: '#82869c' }}
+              tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
               tickFormatter={(value) => formatCurrency(Number(value))}
               width={80}
             />

@@ -55,14 +55,14 @@ export const CategoryBreakdownChart = memo(function CategoryBreakdownChart({
       <div className="analytics-chart">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ececf1" />
-            <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#82869c' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-soft)" />
+            <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
             <YAxis
-              tick={{ fontSize: 12, fill: '#82869c' }}
+              tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
               tickFormatter={(value) => formatCurrency(Number(value))}
               width={80}
             />
-            <Tooltip formatter={(value) => [formatCurrency(Number(value))]} cursor={{ fill: '#f2f3f7' }} />
+            <Tooltip formatter={(value) => [formatCurrency(Number(value))]} cursor={{ fill: 'var(--surface-hover)' }} />
             <Legend />
             <Bar dataKey="total" name="Total" radius={[4, 4, 0, 0]} />
           </BarChart>

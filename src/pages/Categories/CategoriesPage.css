@@ -14,8 +14,11 @@
   margin: 0 0 16px;
   padding: 10px 14px;
   border-radius: 8px;
-  background: #fdecea;
-  color: #b3261e;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--danger);
   font-size: 14px;
 }
 
@@ -33,9 +36,9 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .category-list__swatch {
@@ -54,15 +57,15 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #82869c;
-  background: #f2f3f7;
+  color: var(--text-muted);
+  background: var(--surface-hover);
   padding: 2px 6px;
   border-radius: 6px;
 }
 
 .category-list__aliases {
   font-size: 12px;
-  color: #82869c;
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

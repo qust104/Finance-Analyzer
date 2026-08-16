@@ -1,10 +1,10 @@
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .transaction-table th {
@@ -13,16 +13,16 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #82869c;
+  color: var(--text-muted);
   padding: 12px 16px;
-  background: #fafbfd;
-  border-bottom: 1px solid #ececf1;
+  background: var(--surface-subtle);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .transaction-table td {
   padding: 12px 16px;
   font-size: 14px;
-  border-bottom: 1px solid #f0f1f5;
+  border-bottom: 1px solid var(--border-finer);
 }
 
 .transaction-table__amount,
@@ -32,12 +32,12 @@
 }
 
 .transaction-amount--income {
-  color: #1e8e3e;
+  color: var(--income);
   font-weight: 600;
 }
 
 .transaction-amount--expense {
-  color: #d93025;
+  color: var(--expense);
   font-weight: 600;
 }
 
@@ -55,20 +55,20 @@
 }
 
 .transaction-type--income {
-  background: #e6f4ea;
-  color: #1e8e3e;
+  background: var(--income-bg);
+  color: var(--income);
 }
 
 .transaction-type--expense {
-  background: #fce8e6;
-  color: #d93025;
+  background: var(--expense-bg);
+  color: var(--expense);
 }
 
 .transaction-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 14px 16px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .transaction-card__top {
@@ -88,7 +88,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #82869c;
+  color: var(--text-muted);
 }
 
 .transaction-card__actions {

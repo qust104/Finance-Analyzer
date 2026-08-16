@@ -22,7 +22,7 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #3a3e52;
+  color: var(--text-secondary);
 }
 
 .spending-legend__dot {
@@ -41,12 +41,12 @@
 }
 
 .spending-legend__percent {
-  color: #82869c;
+  color: var(--text-muted);
   min-width: 44px;
   text-align: right;
 }
 
 .spending-empty {
   margin: 24px 0 8px;
-  color: #82869c;
+  color: var(--text-muted);
 }

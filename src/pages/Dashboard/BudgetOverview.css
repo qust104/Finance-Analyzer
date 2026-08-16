@@ -8,7 +8,7 @@
 .budget-overview__link {
   font-size: 13px;
   font-weight: 600;
-  color: #4c5fd5;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -19,6 +19,6 @@
 .budget-overview__empty {
   margin: 0;
   padding: 12px 0;
-  color: #82869c;
+  color: var(--text-muted);
   font-size: 14px;
 }

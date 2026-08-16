@@ -8,28 +8,28 @@
 .form-field__label {
   font-size: 14px;
   font-weight: 600;
-  color: #3a3e52;
+  color: var(--text-secondary);
 }
 
 .form-field__control {
   padding: 9px 12px;
-  border: 1px solid #d5d7e2;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
-  color: #1c1e26;
-  background: #ffffff;
+  color: var(--text);
+  background: var(--surface);
 }
 
 .form-field__control:focus {
-  outline: 2px solid #4c5fd5;
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
 .form-field__error {
   margin: 0;
   font-size: 13px;
-  color: #c0392b;
+  color: var(--danger);
 }
 
 /* Server-side failure shown next to field validation errors:
@@ -38,8 +38,8 @@
   margin: 4px 0 0;
   padding: 8px 10px;
   border-radius: 6px;
-  background: #fdf0ef;
-  color: #c0392b;
+  background: var(--danger-bg);
+  color: var(--danger);
   font-size: 13px;
 }
 
@@ -54,27 +54,27 @@
 }
 
 .button--primary {
-  background: #4c5fd5;
+  background: var(--accent);
   color: #ffffff;
 }
 
 .button--primary:hover {
-  background: #3f4fc0;
+  background: var(--accent-hover);
 }
 
 .button--secondary {
-  background: #ececf1;
-  color: #3a3e52;
+  background: var(--surface-2);
+  color: var(--text-secondary);
 }
 
 .button--secondary:hover {
-  background: #e0e1ea;
+  background: var(--surface-hover-strong);
 }
 
 .action-button {
-  border: 1px solid #d5d7e2;
-  background: #ffffff;
-  color: #3a3e52;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
   border-radius: 6px;
   padding: 5px 10px;
   font-size: 13px;
@@ -84,13 +84,13 @@
 }
 
 .action-button:hover {
-  background: #f2f3f7;
+  background: var(--surface-hover);
 }
 
 .action-button--danger {
-  color: #c0392b;
+  color: var(--danger);
 }
 
 .action-button--danger:hover {
-  background: #fdf1f0;
+  background: var(--danger-bg);
 }

@@ -8,7 +8,7 @@
 .recent-transactions__link {
   font-size: 13px;
   font-weight: 600;
-  color: #4c5fd5;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -29,7 +29,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f1f5;
+  border-bottom: 1px solid var(--border-finer);
   font-size: 14px;
 }
 
@@ -40,16 +40,16 @@
 .recent-transactions__description {
   flex: 1;
   font-weight: 600;
-  color: #1c1e26;
+  color: var(--text);
 }
 
 .recent-transactions__category {
-  color: #82869c;
+  color: var(--text-muted);
   width: 110px;
 }
 
 .recent-transactions__date {
-  color: #82869c;
+  color: var(--text-muted);
   width: 80px;
   text-align: right;
 }
@@ -62,9 +62,9 @@
 }
 
 .recent-transactions__amount--income {
-  color: #1e8e3e;
+  color: var(--income);
 }
 
 .recent-transactions__amount--expense {
-  color: #d93025;
+  color: var(--expense);
 }

@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { applyRecurring } from '../../api/recurring'
 import { LoadingState } from '../../shared/ui/AsyncStates'
+import { ThemeToggle } from '../../shared/ui/ThemeToggle'
 import './AppLayout.css'
 
 const NAV_ITEMS = [
@@ -57,6 +58,7 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <ThemeToggle />
       </aside>
       <main className="layout__main">
         <Suspense fallback={<LoadingState />}>

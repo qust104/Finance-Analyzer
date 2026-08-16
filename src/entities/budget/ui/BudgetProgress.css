@@ -1,8 +1,8 @@
 .budget-progress {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 16px 18px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .budget-progress__header {
@@ -34,7 +34,7 @@
 .budget-progress__track {
   height: 10px;
   border-radius: 999px;
-  background: #ececf1;
+  background: var(--surface-2);
   overflow: hidden;
 }
 
@@ -45,15 +45,15 @@
 }
 
 .budget-progress__bar--ok {
-  background: #4c5fd5;
+  background: var(--accent);
 }
 
 .budget-progress__bar--warning {
-  background: #f59e0b;
+  background: var(--warning);
 }
 
 .budget-progress__bar--exceeded {
-  background: #d93025;
+  background: var(--expense);
 }
 
 .budget-progress__amounts {
@@ -63,11 +63,11 @@
   gap: 8px;
   margin-top: 8px;
   font-size: 13px;
-  color: #82869c;
+  color: var(--text-muted);
 }
 
 .budget-progress__status--exceeded {
-  color: #d93025;
+  color: var(--expense);
   font-weight: 600;
 }
 

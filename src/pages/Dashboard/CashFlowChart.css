@@ -1,8 +1,8 @@
 .dashboard-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .dashboard-card__title {

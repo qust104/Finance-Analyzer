@@ -113,6 +113,49 @@ test('recurring template posts the due transaction after a reload', async ({ pag
   await expect(table.getByText(/20\s*000/)).toBeVisible()
 })
 
+test('toggles dark mode from the sidebar and persists it', async ({ page }) => {
+  await page.goto('/')
+  const toggle = page.getByRole('button', { name: 'Toggle dark mode' })
+  await expect(toggle).toBeVisible()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Toggle dark mode' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+})
+
+test('dark theme swaps body, card and text colors', async ({ page }) => {
+  await page.goto('/dashboard')
+  await page.waitForTimeout(300)
+  const light = await page.evaluate(() => {
+    const body = getComputedStyle(document.body)
+    const card = getComputedStyle(document.querySelector('.stat-card') ?? document.body)
+    return { bg: body.backgroundColor, card: card.backgroundColor, text: body.color }
+  })
+
+  await page.getByRole('button', { name: 'Toggle dark mode' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.waitForTimeout(300)
+  const dark = await page.evaluate(() => {
+    const body = getComputedStyle(document.body)
+    const card = getComputedStyle(document.querySelector('.stat-card') ?? document.body)
+    return { bg: body.backgroundColor, card: card.backgroundColor, text: body.color }
+  })
+
+  expect(light.bg).toBe('rgb(245, 246, 250)')
+  expect(light.card).toBe('rgb(255, 255, 255)')
+  expect(dark.bg).toBe('rgb(16, 19, 28)')
+  expect(dark.card).toBe('rgb(27, 31, 42)')
+  expect(dark.text).toBe('rgb(232, 234, 242)')
+})
+
 test('exports and restores a backup file', async ({ page }) => {
   await page.goto('/transactions')
   await page.getByRole('button', { name: 'Add transaction' }).first().click()

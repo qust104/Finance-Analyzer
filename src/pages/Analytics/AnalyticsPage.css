@@ -6,10 +6,10 @@
 }
 
 .analytics-summary__item {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 16px 20px;
-  box-shadow: 0 1px 4px rgba(15, 18, 30, 0.06);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -19,7 +19,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #82869c;
+  color: var(--text-muted);
 }
 
 .analytics-summary__value {
@@ -29,11 +29,11 @@
 }
 
 .analytics-summary__value--income {
-  color: #1e8e3e;
+  color: var(--income);
 }
 
 .analytics-summary__value--expenses {
-  color: #d93025;
+  color: var(--expense);
 }
 
 @media (max-width: 980px) {
