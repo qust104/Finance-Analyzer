@@ -35,6 +35,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | 🌙 **Dark mode** | Sidebar toggle, persisted, no-flash bootstrap before first paint |
 | 🔍 **Command palette** | Ctrl/Cmd+K fuzzy search over transactions, budgets, categories and pages, with match highlighting and grouped results |
 | 📦 **Mock API** | MSW service worker acts as the backend — no server needed, works in production builds |
+| 📲 **PWA / offline** | Installable app with a precached shell — the SPA works with no network after the first visit |
 | 💾 **Persistence** | All data survives reloads via `localStorage` |
 
 ## 🛠 Tech Stack
@@ -48,7 +49,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (215 tests) + Playwright (7 E2E scenarios) |
+| Tests | Vitest + React Testing Library (215 tests) + Playwright (8 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
@@ -79,7 +80,7 @@ npm run preview    # serve the production build
 - **Integration tests** drive real user flows (add / edit / delete / import) against the MSW API
 - **Accessibility tests** verify focus management in the modal dialog
 - **Performance test** proves row memoization with a 2 000-row list (React Profiler)
-- **7 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode
+- **8 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode, offline reload via the PWA shell
 
 ```bash
 npm run test

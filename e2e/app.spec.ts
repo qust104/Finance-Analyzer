@@ -187,3 +187,25 @@ test('exports and restores a backup file', async ({ page }) => {
   await page.goto('/transactions')
   await expect(page.locator('table').getByText('Backup me')).toBeVisible()
 })
+
+test('keeps working offline after the first visit (PWA shell)', async ({ page, context }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+
+  // Wait for the service worker to take control before cutting the network.
+  await page.evaluate(() => navigator.serviceWorker.ready)
+  await page.reload()
+  await page.evaluate(() => navigator.serviceWorker.ready)
+
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+
+  // Deep SPA route falls back to the precached index.html, and the
+  // local (inline) API keeps serving data with the network down.
+  await page.getByRole('link', { name: 'Transactions' }).click()
+  await expect(page.getByRole('heading', { name: 'Transactions' })).toBeVisible()
+  await expect(page.locator('table').first()).toBeVisible()
+
+  await context.setOffline(false)
+})

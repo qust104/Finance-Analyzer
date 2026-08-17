@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { VitePWA } from 'vite-plugin-pwa'
 import type { Plugin } from 'vite'
 
 // The mock worker is a service worker, recharts paints with inline
@@ -38,7 +39,38 @@ function injectCspMeta(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), injectCspMeta(), visualizer({ filename: 'dist/bundle-report.html', open: false })],
+  plugins: [
+    react(),
+    injectCspMeta(),
+    // PWA shell: precaches the app in production, so after the first
+    // visit the whole SPA (data included — the API runs inline) works
+    // offline and is installable as a standalone app.
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg'],
+      manifest: {
+        name: 'Finance Analyzer',
+        short_name: 'Finance',
+        description: 'Personal finance tracker: transactions, budgets and analytics',
+        theme_color: '#1f2333',
+        background_color: '#1f2333',
+        display: 'standalone',
+        start_url: '.',
+        icons: [
+          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'pwa-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        // The API never touches the network in production, so a
+        // network-first shell is enough: hashed assets stay cacheable
+        // and SPA routes fall back to the precached index.html.
+        navigateFallback: 'index.html',
+      },
+    }),
+    visualizer({ filename: 'dist/bundle-report.html', open: false }),
+  ],
   server: {
     // Bind to IPv4 loopback: the default IPv6-only listener ("::1")
     // breaks the HMR websocket on setups where localhost resolves to
