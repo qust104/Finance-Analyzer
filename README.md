@@ -33,7 +33,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | 💡 **Insights** | Rule-based hints: overspending, high savings rate, budget warnings |
 | 💾 **Backup & restore** | JSON export / import covering transactions, budgets, categories and recurring templates |
 | 🌙 **Dark mode** | Sidebar toggle, persisted, no-flash bootstrap before first paint |
-| 🔍 **Command palette** | Ctrl/Cmd+K quick search over transactions, budgets, categories and pages |
+| 🔍 **Command palette** | Ctrl/Cmd+K fuzzy search over transactions, budgets, categories and pages, with match highlighting and grouped results |
 | 📦 **Mock API** | MSW service worker acts as the backend — no server needed, works in production builds |
 | 💾 **Persistence** | All data survives reloads via `localStorage` |
 
@@ -48,7 +48,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (204 tests) + Playwright (7 E2E scenarios) |
+| Tests | Vitest + React Testing Library (215 tests) + Playwright (7 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started

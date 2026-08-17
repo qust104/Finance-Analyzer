@@ -1,13 +1,42 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBudgets } from '../hooks/useBudgets'
 import { useCategories } from '../hooks/useCategories'
 import { useTransactions } from '../hooks/useTransactions'
 import { Modal } from '../ui/Modal'
-import { buildSearchIndex, searchIndex } from './searchIndex'
+import type { MatchSpan } from './searchIndex'
+import { buildSearchIndex, groupResults, rankResults } from './searchIndex'
+import type { SearchResult } from './searchIndex'
 import { useCommandPaletteStore } from './useCommandPalette'
 import './CommandPalette.css'
+
+const GROUP_LABELS: Record<SearchResult['type'], string> = {
+  transaction: 'Transactions',
+  budget: 'Budgets',
+  category: 'Categories',
+  page: 'Pages',
+}
+
+// Splits the text on the match ranges and wraps each hit in <mark>.
+function HighlightedText({ text, spans }: { text: string; spans: readonly MatchSpan[] }) {
+  if (spans.length === 0) {
+    return <>{text}</>
+  }
+  const nodes: ReactNode[] = []
+  let cursor = 0
+  for (const span of spans) {
+    if (span.start > cursor) {
+      nodes.push(text.slice(cursor, span.start))
+    }
+    nodes.push(<mark key={`${span.start}:${span.end}`}>{text.slice(span.start, span.end)}</mark>)
+    cursor = span.end
+  }
+  if (cursor < text.length) {
+    nodes.push(text.slice(cursor))
+  }
+  return <>{nodes}</>
+}
 
 // Content sits below the visibility gate, so every open mounts it fresh:
 // query and selection start clean without reset effects.
@@ -29,13 +58,22 @@ function CommandPaletteContent() {
     () => buildSearchIndex(transactions, budgets, categories),
     [transactions, budgets, categories],
   )
-  const results = useMemo(() => searchIndex(index, query), [index, query])
+  const { groups, total } = useMemo(() => groupResults(rankResults(index, query)), [index, query])
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  const activate = (result: (typeof results)[number]) => {
+  const flatGroups = useMemo(
+    () =>
+      groups.flatMap((group) =>
+        group.items.map((entry) => ({ groupType: group.type, entry })),
+      ),
+    [groups],
+  )
+  const active = flatGroups[activeIndex]
+
+  const activate = (result: (typeof index)[number]) => {
     navigate(result.href)
     close()
   }
@@ -43,14 +81,65 @@ function CommandPaletteContent() {
   const handleListKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault()
-      setActiveIndex((current) => Math.min(current + 1, results.length - 1))
+      setActiveIndex((current) => Math.min(current + 1, Math.max(flatGroups.length - 1, 0)))
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
       setActiveIndex((current) => Math.max(current - 1, 0))
-    } else if (event.key === 'Enter' && results.length > 0) {
+    } else if (event.key === 'Enter' && active) {
       event.preventDefault()
-      activate(results[activeIndex])
+      activate(active.entry.result)
     }
+  }
+
+  let cursor = -1
+  const listNodes: ReactNode[] = []
+  for (const group of groups) {
+    listNodes.push(
+      <li key={`label:${group.type}`} className="command-palette__group-label">
+        {GROUP_LABELS[group.type]}
+      </li>,
+    )
+    for (const entry of group.items) {
+      cursor += 1
+      const index = cursor
+      const isActive = index === activeIndex
+      listNodes.push(
+        <li key={`${group.type}:${entry.result.id}`} role="option" aria-selected={isActive}>
+          <button
+            type="button"
+            className={`command-palette__result${
+              isActive ? ' command-palette__result--active' : ''
+            }`}
+            onMouseEnter={() => setActiveIndex(index)}
+            onClick={() => activate(entry.result)}
+          >
+            <span className="command-palette__type">{entry.result.type}</span>
+            <span className="command-palette__texts">
+              <span className="command-palette__title">
+                <HighlightedText text={entry.result.title} spans={entry.titleSpans} />
+              </span>
+              <span className="command-palette__subtitle">
+                <HighlightedText text={entry.result.subtitle} spans={entry.subtitleSpans} />
+              </span>
+            </span>
+          </button>
+        </li>,
+      )
+    }
+    if (group.more > 0) {
+      listNodes.push(
+        <li key={`more:${group.type}`} className="command-palette__more">
+          +{group.more} more {group.type}s
+        </li>,
+      )
+    }
+  }
+  if (total > flatGroups.length) {
+    listNodes.push(
+      <li key="more:all" className="command-palette__more">
+        +{total - flatGroups.length} more matches overall
+      </li>,
+    )
   }
 
   return (
@@ -66,35 +155,18 @@ function CommandPaletteContent() {
         className="command-palette__input"
         placeholder="Transactions, budgets, categories, pages…"
         aria-label="Search query"
-        aria-expanded={results.length > 0}
+        aria-expanded={flatGroups.length > 0}
         role="combobox"
       />
       {query.trim() === '' ? (
         <p className="command-palette__hint">
           Type to search transactions, budgets, categories or pages.
         </p>
-      ) : results.length === 0 ? (
+      ) : flatGroups.length === 0 ? (
         <p className="command-palette__empty">No matches for “{query.trim()}”.</p>
       ) : (
         <ul className="command-palette__results" role="listbox">
-          {results.map((result, index) => (
-            <li key={`${result.type}:${result.id}`} role="option" aria-selected={index === activeIndex}>
-              <button
-                type="button"
-                className={`command-palette__result${
-                  index === activeIndex ? ' command-palette__result--active' : ''
-                }`}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => activate(result)}
-              >
-                <span className="command-palette__type">{result.type}</span>
-                <span className="command-palette__texts">
-                  <span className="command-palette__title">{result.title}</span>
-                  <span className="command-palette__subtitle">{result.subtitle}</span>
-                </span>
-              </button>
-            </li>
-          ))}
+          {listNodes}
         </ul>
       )}
     </div>
