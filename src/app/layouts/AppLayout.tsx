@@ -2,6 +2,8 @@ import { Suspense, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { applyRecurring } from '../../api/recurring'
+import { CommandPalette } from '../../shared/command-palette/CommandPalette'
+import { useCommandPaletteStore } from '../../shared/command-palette/useCommandPalette'
 import { LoadingState } from '../../shared/ui/AsyncStates'
 import { ThemeToggle } from '../../shared/ui/ThemeToggle'
 import './AppLayout.css'
@@ -41,6 +43,7 @@ function useRecurringMaintenance() {
 
 export function AppLayout() {
   useRecurringMaintenance()
+  const openCommandPalette = useCommandPaletteStore((state) => state.open)
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -58,6 +61,14 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <button
+          type="button"
+          className="sidebar__search"
+          onClick={openCommandPalette}
+          aria-label="Search (Ctrl K)"
+        >
+          Search
+        </button>
         <ThemeToggle />
       </aside>
       <main className="layout__main">
@@ -65,6 +76,7 @@ export function AppLayout() {
           <Outlet />
         </Suspense>
       </main>
+      <CommandPalette />
     </div>
   )
 }

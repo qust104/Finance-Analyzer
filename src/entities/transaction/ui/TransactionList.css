@@ -25,6 +25,12 @@
   border-bottom: 1px solid var(--border-finer);
 }
 
+/* Row picked from the command palette: visible entry point, the URL
+   keeps the highlight stable across reloads. */
+.transaction-table__row--highlighted {
+  background: var(--highlight-bg);
+}
+
 .transaction-table__amount,
 .transaction-amount {
   text-align: right;
