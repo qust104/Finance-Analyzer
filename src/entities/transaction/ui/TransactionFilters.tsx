@@ -117,6 +117,52 @@ export function TransactionFilters({
           </button>
         )}
       </div>
+
+      <div className="transaction-filters__row">
+        <label className="transaction-filters__field">
+          <span className="transaction-filters__label">From</span>
+          <input
+            type="date"
+            className="form-field__control"
+            value={filters.from}
+            onChange={(event) => onChange({ from: event.target.value })}
+          />
+        </label>
+
+        <label className="transaction-filters__field">
+          <span className="transaction-filters__label">To</span>
+          <input
+            type="date"
+            className="form-field__control"
+            value={filters.to}
+            onChange={(event) => onChange({ to: event.target.value })}
+          />
+        </label>
+
+        <label className="transaction-filters__field">
+          <span className="transaction-filters__label">Min amount</span>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            className="form-field__control"
+            value={filters.minAmount}
+            onChange={(event) => onChange({ minAmount: event.target.value })}
+          />
+        </label>
+
+        <label className="transaction-filters__field">
+          <span className="transaction-filters__label">Max amount</span>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            className="form-field__control"
+            value={filters.maxAmount}
+            onChange={(event) => onChange({ maxAmount: event.target.value })}
+          />
+        </label>
+      </div>
     </div>
   )
 }

@@ -23,7 +23,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 
 | Feature | Details |
 | --- | --- |
-| 🧾 **Transactions** | CRUD, search, category / type / month filters, URL-synced sort state |
+| 🧾 **Transactions** | CRUD, search, category / type / month filters, date range, amount range, URL-synced sort state |
 | 📥 **CSV import** | Hand-written state-machine parser, category aliases (`еда` → `food`), duplicate detection, size / row limits |
 | 🎯 **Budgets** | Per-category monthly limits with progress bars and warnings |
 | 🔁 **Recurring transactions** | Weekly / monthly / yearly templates auto-posted on app load, backfill and duplicate protection |
@@ -49,7 +49,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (215 tests) + Playwright (8 E2E scenarios) |
+| Tests | Vitest + React Testing Library (222 tests) + Playwright (8 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
