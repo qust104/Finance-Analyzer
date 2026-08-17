@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { MemoryRouter } from 'react-router-dom'
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -165,5 +165,24 @@ describe('transactions page', () => {
 
     expect(await screen.findByText('1 of 1 rows failed to import')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('opens the import preview for a CSV file dropped onto the page', async () => {
+    await renderPage()
+
+    const file = {
+      size: 64,
+      name: 'drop.csv',
+      text: async () =>
+        'date,description,amount,type,category\n2026-08-05,Dropped meal,700,expense,food',
+    } as unknown as File
+    const dataTransfer = { types: ['Files'], files: [file] } as unknown as DataTransfer
+
+    fireEvent.dragEnter(window, { dataTransfer })
+    expect(screen.getByText('Drop your CSV file')).toBeInTheDocument()
+
+    fireEvent.drop(window, { dataTransfer })
+    expect(await screen.findByRole('dialog', { name: 'Import transactions' })).toBeInTheDocument()
+    expect(await screen.findByText(/ready to import/)).toBeInTheDocument()
   })
 })

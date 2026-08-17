@@ -21,6 +21,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 // Imported files are untrusted input: without limits a single file could
 // freeze the tab while the synchronous parser walks millions of rows.
 export const MAX_IMPORT_ROWS = 10_000
+export const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 
 export function parseCsvDate(raw: string): string | null {
   if (!ISO_DATE.test(raw)) return null

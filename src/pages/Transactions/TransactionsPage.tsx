@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
+import { buildImportPreview, MAX_IMPORT_BYTES } from '../../features/import-transactions/csvImport'
+import type { ImportPreview } from '../../features/import-transactions/csvImport'
 import {
   applyFilters,
   getAvailableMonths,
@@ -56,6 +58,72 @@ export function TransactionsPage() {
   const importOpen = useUiStore((state) => state.importOpen)
   const openImportModal = useUiStore((state) => state.openImportModal)
   const closeImportModal = useUiStore((state) => state.closeImportModal)
+
+  // Preview prebuilt for a file dropped onto the page; the modal consumes
+  // it on mount. null keeps the classic picker-only flow.
+  const [importPreset, setImportPreset] = useState<ImportPreview | null>(null)
+  const [dragDepth, setDragDepth] = useState(0)
+
+  const handleDropFile = useCallback(
+    async (file: File) => {
+      if (file.size > MAX_IMPORT_BYTES) {
+        setImportPreset({
+          valid: [],
+          invalid: [],
+          duplicates: [],
+          fileErrors: ['The file is too large. Maximum size is 5 MB.'],
+        })
+        openImportModal()
+        return
+      }
+      const text = await file.text()
+      setImportPreset(buildImportPreview(text, transactions, categories))
+      openImportModal()
+    },
+    [transactions, categories, openImportModal],
+  )
+
+  useEffect(() => {
+    const hasFiles = (event: DragEvent) => event.dataTransfer?.types.includes('Files') ?? false
+    const onDragEnter = (event: DragEvent) => {
+      if (hasFiles(event)) {
+        event.preventDefault()
+        setDragDepth((depth) => depth + 1)
+      }
+    }
+    const onDragOver = (event: DragEvent) => {
+      if (hasFiles(event)) {
+        // Without preventDefault the browser refuses to drop.
+        event.preventDefault()
+      }
+    }
+    const onDragLeave = (event: DragEvent) => {
+      if (hasFiles(event)) {
+        setDragDepth((depth) => Math.max(0, depth - 1))
+      }
+    }
+    const onDrop = (event: DragEvent) => {
+      if (!hasFiles(event)) {
+        return
+      }
+      event.preventDefault()
+      setDragDepth(0)
+      const file = event.dataTransfer?.files[0]
+      if (file) {
+        void handleDropFile(file)
+      }
+    }
+    window.addEventListener('dragenter', onDragEnter)
+    window.addEventListener('dragover', onDragOver)
+    window.addEventListener('dragleave', onDragLeave)
+    window.addEventListener('drop', onDrop)
+    return () => {
+      window.removeEventListener('dragenter', onDragEnter)
+      window.removeEventListener('dragover', onDragOver)
+      window.removeEventListener('dragleave', onDragLeave)
+      window.removeEventListener('drop', onDrop)
+    }
+  }, [handleDropFile])
 
   // Filtering runs on every keystroke of the search input: memoize the
   // result so only the visible rows re-render, not the whole table.
@@ -146,10 +214,16 @@ export function TransactionsPage() {
       <div className="transactions-header">
         <h1 className="page-title">Transactions</h1>
         <div className="transactions-header__actions">
-          <button type="button" className="button button--secondary" onClick={openImportModal}>
-            Import CSV
-          </button>
           <button
+            type="button"
+            className="button button--secondary"
+            onClick={() => {
+              setImportPreset(null)
+              openImportModal()
+            }}
+          >
+            Import CSV
+          </button>          <button
             type="button"
             className="button button--primary"
             onClick={() => openTransactionForm('new')}
@@ -237,7 +311,17 @@ export function TransactionsPage() {
           importState={importState}
           onImport={handleImport}
           onClose={closeImportModal}
+          importPreset={importPreset}
         />
+      )}
+
+      {dragDepth > 0 && (
+        <div className="drop-overlay" aria-hidden="true">
+          <div className="drop-overlay__inner">
+            <p className="drop-overlay__title">Drop your CSV file</p>
+            <p className="drop-overlay__hint">Release to open the import preview</p>
+          </div>
+        </div>
       )}
 
       {pendingUndo !== null && (

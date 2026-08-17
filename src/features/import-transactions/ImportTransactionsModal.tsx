@@ -7,7 +7,7 @@ import type { Transaction } from '../../entities/transaction/model/types'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import { formatAmount, formatDate } from '../../shared/lib/format'
 import { Modal } from '../../shared/ui/Modal'
-import { buildImportPreview } from './csvImport'
+import { buildImportPreview, MAX_IMPORT_BYTES } from './csvImport'
 import type { ImportPreview } from './csvImport'
 import './ImportTransactionsModal.css'
 import '../../shared/ui/form.css'
@@ -18,10 +18,12 @@ interface ImportTransactionsModalProps {
   importState: { isPending: boolean; error: string | null }
   onImport: (inputs: readonly TransactionInput[]) => Promise<void>
   onClose: () => void
+  // A file dropped onto the page: the preview is built before the modal
+  // opens, so the mount initializer just consumes it.
+  importPreset?: ImportPreview | null
 }
 
 const PREVIEW_LIMIT = 10
-const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 
 export function ImportTransactionsModal({
   transactions,
@@ -29,8 +31,9 @@ export function ImportTransactionsModal({
   importState,
   onImport,
   onClose,
+  importPreset = null,
 }: ImportTransactionsModalProps) {
-  const [preview, setPreview] = useState<ImportPreview | null>(null)
+  const [preview, setPreview] = useState<ImportPreview | null>(() => importPreset)
   // Kept so a failed batch can rebuild the preview against fresh data:
   // rows the partial batch already committed become duplicates, and a
   // retry sends only the rest instead of re-creating everything.
