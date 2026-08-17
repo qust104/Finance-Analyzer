@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
 import {
   applyFilters,
@@ -96,6 +97,32 @@ export function TransactionsPage() {
 
   const matchesNothing = transactions.length > 0 && filteredTransactions.length === 0
 
+  // Arriving from the command palette (?highlight=<id>): make sure the
+  // row is reachable (clear active filters) and bring it into view.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const highlightId = searchParams.get('highlight')
+  const hasHighlight = highlightId !== null
+
+  useEffect(() => {
+    if (!hasHighlight) {
+      return
+    }
+    if (hasActiveFilters(filters)) {
+      // Keep the highlight param while clearing the filters.
+      const params = new URLSearchParams(searchParams)
+      for (const key of ['q', 'category', 'type', 'month'] as const) {
+        params.delete(key)
+      }
+      setSearchParams(params, { replace: true })
+      return
+    }
+    const frame = requestAnimationFrame(() => {
+      const row = document.querySelector(`tr[data-transaction-id="${highlightId}"]`)
+      row?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [hasHighlight, highlightId, filters, searchParams, setSearchParams])
+
   if (isPending) {
     return (
       <section>
@@ -170,6 +197,7 @@ export function TransactionsPage() {
             categories={categories}
             onEdit={openTransactionForm}
             onDelete={requestDelete}
+            highlightId={highlightId}
           />
           <ul className="transaction-cards">
             {filteredTransactions.map((transaction) => (

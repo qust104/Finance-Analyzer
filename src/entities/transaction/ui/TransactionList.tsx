@@ -11,11 +11,21 @@ interface TransactionRowProps {
   categories: readonly CategoryDef[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
+  highlighted: boolean
 }
 
-function TransactionRow({ transaction, categories, onEdit, onDelete }: TransactionRowProps) {
+function TransactionRow({
+  transaction,
+  categories,
+  onEdit,
+  onDelete,
+  highlighted,
+}: TransactionRowProps) {
   return (
-    <tr>
+    <tr
+      data-transaction-id={transaction.id}
+      className={highlighted ? 'transaction-table__row--highlighted' : undefined}
+    >
       <td>{formatDate(transaction.date)}</td>
       <td>{transaction.description}</td>
       <td>{categoryLabelOf(categories, transaction.category)}</td>
@@ -48,6 +58,7 @@ interface TransactionListProps {
   categories: readonly CategoryDef[]
   onEdit: (transaction: Transaction) => void
   onDelete: (id: string) => void
+  highlightId?: string | null
 }
 
 // Row-level memo: typing in the search filter re-renders the page on
@@ -59,6 +70,7 @@ export function TransactionList({
   categories,
   onEdit,
   onDelete,
+  highlightId = null,
 }: TransactionListProps) {
   return (
     <table className="transaction-table">
@@ -84,6 +96,7 @@ export function TransactionList({
             categories={categories}
             onEdit={onEdit}
             onDelete={onDelete}
+            highlighted={transaction.id === highlightId}
           />
         ))}
       </tbody>

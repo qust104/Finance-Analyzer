@@ -43,6 +43,25 @@
   background: var(--sidebar-active);
 }
 
+.sidebar__search {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sidebar-muted);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sidebar__search:hover {
+  color: var(--sidebar-text);
+  background: var(--sidebar-hover);
+}
+
 .layout__main {
   flex: 1;
   padding: 32px;

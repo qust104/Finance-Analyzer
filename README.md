@@ -33,6 +33,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | 💡 **Insights** | Rule-based hints: overspending, high savings rate, budget warnings |
 | 💾 **Backup & restore** | JSON export / import covering transactions, budgets, categories and recurring templates |
 | 🌙 **Dark mode** | Sidebar toggle, persisted, no-flash bootstrap before first paint |
+| 🔍 **Command palette** | Ctrl/Cmd+K quick search over transactions, budgets, categories and pages |
 | 📦 **Mock API** | MSW service worker acts as the backend — no server needed, works in production builds |
 | 💾 **Persistence** | All data survives reloads via `localStorage` |
 
@@ -47,7 +48,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (201 tests) + Playwright (7 E2E scenarios) |
+| Tests | Vitest + React Testing Library (204 tests) + Playwright (7 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
@@ -69,6 +70,7 @@ npm run preview    # serve the production build
 | `npm run test:e2e` | Playwright E2E against a fresh production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc -b` without emitting |
+| `npm run check:bundle` | Fail when the total JS payload exceeds the budget |
 | `npm run format` | Prettier --write |
 
 ## 🧪 Testing
@@ -106,6 +108,7 @@ src/
 │                         # Categories, Recurring, Settings
 └── shared/
     ├── hooks/            # data hooks (useTransactions, useBudgets, useTheme)
+    ├── command-palette/  # Ctrl/Cmd+K quick search (index + store + UI)
     ├── lib/              # formatting, monitoring, category colors
     ├── store/            # Zustand UI store
     └── ui/               # Modal, AsyncStates, ErrorBoundary, ThemeToggle

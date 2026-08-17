@@ -42,6 +42,7 @@ body {
   --warning-border: #f3e2c4;
   --warning-text: #8a5a00;
   --overlay: rgba(15, 18, 30, 0.5);
+  --highlight-bg: rgba(76, 95, 213, 0.12);
   --shadow-card: 0 1px 4px rgba(15, 18, 30, 0.06);
   --shadow-modal: 0 12px 32px rgba(15, 18, 30, 0.18);
   --sidebar-bg: #1f2333;
@@ -89,6 +90,7 @@ body {
   --warning-border: #4a3b22;
   --warning-text: #e8c27b;
   --overlay: rgba(0, 0, 0, 0.62);
+  --highlight-bg: rgba(107, 127, 253, 0.18);
   --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.35);
   --shadow-modal: 0 12px 32px rgba(0, 0, 0, 0.5);
   --sidebar-bg: #141724;
