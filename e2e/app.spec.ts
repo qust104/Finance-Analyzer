@@ -209,3 +209,23 @@ test('keeps working offline after the first visit (PWA shell)', async ({ page, c
 
   await context.setOffline(false)
 })
+
+test('imports a CSV file dropped onto the page', async ({ page }) => {
+  await page.goto('/transactions')
+
+  const csv = 'date,description,amount,type,category\n2026-08-05,Dropped drone,700,expense,other'
+  const dataTransfer = await page.evaluateHandle((text) => {
+    const transfer = new DataTransfer()
+    transfer.items.add(new File([text], 'drone.csv', { type: 'text/csv' }))
+    return transfer
+  }, csv)
+  await page.dispatchEvent('body', 'drop', { dataTransfer })
+
+  const dialog = page.getByRole('dialog', { name: 'Import transactions' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText(/ready to import/)).toBeVisible()
+
+  await dialog.getByRole('button', { name: 'Import 1 transaction' }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.locator('table').getByText('Dropped drone')).toBeVisible()
+})

@@ -24,7 +24,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Feature | Details |
 | --- | --- |
 | 🧾 **Transactions** | CRUD, search, category / type / month filters, date range, amount range, URL-synced sort state |
-| 📥 **CSV import** | Hand-written state-machine parser, category aliases (`еда` → `food`), duplicate detection, size / row limits |
+| 📥 **CSV import** | Hand-written state-machine parser, category aliases (`еда` → `food`), duplicate detection, size / row limits, drag & drop |
 | 🎯 **Budgets** | Per-category monthly limits with progress bars and warnings |
 | 🔁 **Recurring transactions** | Weekly / monthly / yearly templates auto-posted on app load, backfill and duplicate protection |
 | 🏷 **Custom categories** | User-defined categories with colors and aliases, built-in catalogue, CSV alias resolution |
@@ -49,7 +49,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (222 tests) + Playwright (8 E2E scenarios) |
+| Tests | Vitest + React Testing Library (223 tests) + Playwright (9 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
@@ -80,7 +80,7 @@ npm run preview    # serve the production build
 - **Integration tests** drive real user flows (add / edit / delete / import) against the MSW API
 - **Accessibility tests** verify focus management in the modal dialog
 - **Performance test** proves row memoization with a 2 000-row list (React Profiler)
-- **8 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode, offline reload via the PWA shell
+- **9 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode, offline reload via the PWA shell, drag & drop CSV import
 
 ```bash
 npm run test
