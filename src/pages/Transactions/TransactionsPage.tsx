@@ -110,7 +110,7 @@ export function TransactionsPage() {
     if (hasActiveFilters(filters)) {
       // Keep the highlight param while clearing the filters.
       const params = new URLSearchParams(searchParams)
-      for (const key of ['q', 'category', 'type', 'month'] as const) {
+      for (const key of ['q', 'category', 'type', 'month', 'from', 'to', 'min', 'max'] as const) {
         params.delete(key)
       }
       setSearchParams(params, { replace: true })
