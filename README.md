@@ -17,7 +17,7 @@
 
 </div>
 
-A full-featured SPA that tracks income and expenses: transaction CRUD with filters and CSV import, monthly budgets, spending analytics, charts and automatically generated financial insights.
+A full-featured SPA that tracks income and expenses: transaction CRUD with filters and CSV import, monthly budgets, custom categories, recurring transactions, spending analytics, charts and automatically generated financial insights — with backup/restore and a dark mode.
 
 ## ✨ Features
 
@@ -26,8 +26,13 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | 🧾 **Transactions** | CRUD, search, category / type / month filters, URL-synced sort state |
 | 📥 **CSV import** | Hand-written state-machine parser, category aliases (`еда` → `food`), duplicate detection, size / row limits |
 | 🎯 **Budgets** | Per-category monthly limits with progress bars and warnings |
+| 🔁 **Recurring transactions** | Weekly / monthly / yearly templates auto-posted on app load, backfill and duplicate protection |
+| 🏷 **Custom categories** | User-defined categories with colors and aliases, built-in catalogue, CSV alias resolution |
 | 📊 **Dashboard** | Cash flow and spending charts (Recharts), recent activity, budget overview |
+| 📈 **Analytics** | Monthly trend, category breakdown and month-over-month comparison |
 | 💡 **Insights** | Rule-based hints: overspending, high savings rate, budget warnings |
+| 💾 **Backup & restore** | JSON export / import covering transactions, budgets, categories and recurring templates |
+| 🌙 **Dark mode** | Sidebar toggle, persisted, no-flash bootstrap before first paint |
 | 📦 **Mock API** | MSW service worker acts as the backend — no server needed, works in production builds |
 | 💾 **Persistence** | All data survives reloads via `localStorage` |
 
@@ -41,8 +46,8 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Client state | Zustand (modal / form flags) |
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
-| Mock backend | MSW |
-| Tests | Vitest + React Testing Library (108 tests) |
+| Mock backend | MSW (dev/tests) + inline local handler (production) |
+| Tests | Vitest + React Testing Library (201 tests) + Playwright (7 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
@@ -61,41 +66,50 @@ npm run preview    # serve the production build
 | `npm run build` | Type-check + production build |
 | `npm run preview` | Preview the built app |
 | `npm run test` | Run all tests (Vitest) |
+| `npm run test:e2e` | Playwright E2E against a fresh production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc -b` without emitting |
 | `npm run format` | Prettier --write |
 
 ## 🧪 Testing
 
-- **99+ unit tests** for domain logic, analytics, CSV parsing and validation
+- **200+ unit tests** for domain logic, analytics, CSV parsing, validation and theming
 - **Integration tests** drive real user flows (add / edit / delete / import) against the MSW API
 - **Accessibility tests** verify focus management in the modal dialog
 - **Performance test** proves row memoization with a 2 000-row list (React Profiler)
+- **7 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode
 
 ```bash
 npm run test
+npm run test:e2e
 ```
 
 ## 📁 Project Structure
 
 ```
 src/
-├── analytics/            # calculations, budget usage, insights
+├── analytics/            # calculations, budget usage, insights, recurring schedule
 ├── api/                  # fetch layer (ApiError, endpoints)
-├── app/                  # router, layout, lazy-loaded routes
+├── app/                  # router, layout (nav + theme toggle), lazy-loaded routes
 ├── data/                 # seed data
 ├── entities/
 │   ├── transaction/      # model, storage, repository, form, list, filters
-│   └── budget/           # model, storage, form, progress
+│   ├── budget/           # model, storage, form, progress
+│   ├── category/         # model, catalogue, storage, form
+│   └── recurring/        # model, storage, form
 ├── features/
-│   └── import-transactions/  # CSV parser + import modal
+│   ├── import-transactions/  # CSV parser + import modal
+│   ├── export-data/          # backup payload build / parse
+│   └── recurring/            # schedule engine
 ├── mocks/                # MSW handlers (the "backend")
-├── pages/                # Dashboard, Transactions, Budgets, Analytics, Settings
+├── pages/                # Dashboard, Transactions, Budgets, Analytics,
+│                         # Categories, Recurring, Settings
 └── shared/
-    ├── hooks/            # data hooks (useTransactions, useBudgets)
+    ├── hooks/            # data hooks (useTransactions, useBudgets, useTheme)
     ├── lib/              # formatting, monitoring, category colors
     ├── store/            # Zustand UI store
-    └── ui/               # Modal, AsyncStates, ErrorBoundary, PageContainer
+    └── ui/               # Modal, AsyncStates, ErrorBoundary, ThemeToggle
+e2e/                      # Playwright scenarios (production build)
 ```
 
 ## 🧠 Architecture Notes

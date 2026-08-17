@@ -102,5 +102,17 @@ export default defineConfig({
     environmentOptions: {
       jsdom: { url: 'http://localhost' },
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary'],
+      exclude: [
+        'src/main.tsx',
+        'src/mocks/**',
+        'src/test/**',
+        'src/data/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.css',
+      ],
+    },
   },
 })

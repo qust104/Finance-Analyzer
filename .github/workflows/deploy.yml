@@ -22,13 +22,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm run test
+      # Verification already ran in ci.yml as the PR gate before merge;
+      # this job only builds and publishes.
+      - run: npm run build -- --base=/Finance-Analyzer/
       # keep_files never deletes: hashed assets from previous deploys
       # stay live, so cached index.html files keep loading their own
       # assets until the Pages CDN cache (max-age=600) expires and
       # visitors never hit a blank 404 window after a deploy.
-      - run: npm run build -- --base=/Finance-Analyzer/
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
