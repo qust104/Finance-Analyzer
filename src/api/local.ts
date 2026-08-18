@@ -10,6 +10,7 @@ import { generateInsights } from '../analytics/insights'
 import { isBudget } from '../entities/budget/model/budgetStorage'
 import { createLocalStorageBudgetRepository } from '../entities/budget/model/budgetRepository'
 import { createLocalStorageCategoryRepository } from '../entities/category/model/categoryRepository'
+import { BUILTIN_CATEGORIES } from '../entities/category/model/catalog'
 import { categorySchema } from '../entities/category/model/categorySchema'
 import { isCategoryDef } from '../entities/category/model/categoryStorage'
 import { createLocalStorageRecurringRepository } from '../entities/recurring/model/recurringRepository'
@@ -42,6 +43,16 @@ function parseTransactionInput(body: unknown) {
     return { error: { error: message } }
   }
   return { value: parsed.data }
+}
+
+// Referential integrity: a row may only reference a category that exists.
+// The catalogue is not static (custom categories live in storage), so the
+// check lives here, next to the repositories, not inside the Zod schema.
+function categoryExists(key: string): boolean {
+  return (
+    BUILTIN_CATEGORIES.some((category) => category.key === key) ||
+    categories.getAll().some((category) => category.key === key)
+  )
 }
 
 function parseBody(init?: RequestInit): unknown {
@@ -80,6 +91,7 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     matchRoute(normalized, 'api/budgets/:id') ??
     matchRoute(normalized, 'api/categories/:key') ??
     matchRoute(normalized, 'api/recurring/:id')
+  const restoreParams = matchRoute(normalized, 'api/recurring/:id/restore')
   const isList = normalized === '/api/transactions'
   const isBudgets = normalized === '/api/budgets'
   const isCategories = normalized === '/api/categories'
@@ -93,6 +105,9 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     if (method === 'PATCH') {
       const input = parseTransactionInput(parseBody(init))
       if ('error' in input) return { status: 400, body: input.error }
+      if (!categoryExists(input.value.category)) {
+        return { status: 400, body: { error: 'Unknown category' } }
+      }
       try {
         return { status: 200, body: transactions.update(String(params.id), input.value) }
       } catch {
@@ -110,6 +125,9 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     if (method === 'POST') {
       const input = parseTransactionInput(parseBody(init))
       if ('error' in input) return { status: 400, body: input.error }
+      if (!categoryExists(input.value.category)) {
+        return { status: 400, body: { error: 'Unknown category' } }
+      }
       return { status: 201, body: transactions.create(input.value) }
     }
   }
@@ -185,10 +203,11 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     if (method === 'DELETE') {
       const inUseByTransactions = transactions.getAll().some((transaction) => transaction.category === key)
       const inUseByBudgets = budgets.getAll().some((budget) => budget.category === key)
-      if (inUseByTransactions || inUseByBudgets) {
+      const inUseByRecurring = recurring.getAll().some((template) => template.category === key)
+      if (inUseByTransactions || inUseByBudgets || inUseByRecurring) {
         return {
           status: 409,
-          body: { error: 'This category is used by transactions or budgets' },
+          body: { error: 'This category is used by transactions, budgets or recurring templates' },
         }
       }
       try {
@@ -224,6 +243,9 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
         const message = parsed.error.issues[0]?.message ?? 'Invalid recurring data'
         return { status: 400, body: { error: message } }
       }
+      if (!categoryExists(parsed.data.category)) {
+        return { status: 400, body: { error: 'Unknown category' } }
+      }
       try {
         return { status: 200, body: recurring.update(id, parsed.data) }
       } catch {
@@ -236,6 +258,18 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
     }
   }
 
+  if (restoreParams) {
+    if (method === 'POST') {
+      // The whole template comes back (id and lastPostedDate included):
+      // an undo must restore the exact state, not a recreated row.
+      const template = parseBody(init)
+      if (!isRecurring(template)) {
+        return { status: 400, body: { error: 'Invalid recurring data' } }
+      }
+      return { status: 200, body: recurring.restore(template) }
+    }
+  }
+
   if (isRecurringList) {
     if (method === 'GET') return { status: 200, body: recurring.getAll() }
     if (method === 'POST') {
@@ -243,6 +277,9 @@ export function handleLocalRequest(url: string, init?: RequestInit): LocalRespon
       if (!parsed.success) {
         const message = parsed.error.issues[0]?.message ?? 'Invalid recurring data'
         return { status: 400, body: { error: message } }
+      }
+      if (!categoryExists(parsed.data.category)) {
+        return { status: 400, body: { error: 'Unknown category' } }
       }
       return { status: 201, body: recurring.create(parsed.data) }
     }

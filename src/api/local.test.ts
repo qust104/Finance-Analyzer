@@ -183,6 +183,177 @@ describe('local server', () => {
     expect(deleted.status).toBe(409)
   })
 
+  it('refuses to delete a category used by a recurring template', () => {
+    const created = handleLocalRequest('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify({ label: 'Yoga', color: '#84cc16', aliases: [] }),
+    })
+    const key = (created.body as { key: string }).key
+
+    const template = handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Yoga class',
+        amount: 2500,
+        type: 'expense',
+        category: 'yoga',
+        interval: 'monthly',
+        startDate: '2026-08-01',
+        endDate: null,
+        active: true,
+      }),
+    })
+    expect(template.status).toBe(201)
+
+    const deleted = handleLocalRequest(`/api/categories/${key}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(409)
+
+    handleLocalRequest(`/api/recurring/${(template.body as { id: string }).id}`, {
+      method: 'DELETE',
+    })
+  })
+
+  describe('category integrity', () => {
+    it('rejects a transaction with an unknown category on POST and PATCH', () => {
+      const unknown = { ...validTransaction, category: 'not-a-real-category' }
+      const post = handleLocalRequest('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify(unknown),
+      })
+      expect(post.status).toBe(400)
+
+      const seed = handleLocalRequest('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify(validTransaction),
+      })
+      const id = (seed.body as { id: string }).id
+      const patch = handleLocalRequest(`/api/transactions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(unknown),
+      })
+      expect(patch.status).toBe(400)
+    })
+
+    it('accepts a transaction using a custom category', () => {
+      handleLocalRequest('/api/categories', {
+        method: 'POST',
+        body: JSON.stringify({ label: 'Subscriptions', color: '#8b5cf6', aliases: [] }),
+      })
+      const result = handleLocalRequest('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify({ ...validTransaction, category: 'subscriptions' }),
+      })
+      expect(result.status).toBe(201)
+    })
+
+    it('rejects a recurring template with an unknown category on POST and PATCH', () => {
+      const unknown = {
+        description: 'Rent',
+        amount: 20000,
+        type: 'expense',
+        category: 'not-a-real-category',
+        interval: 'monthly',
+        startDate: '2026-08-01',
+        endDate: null,
+        active: true,
+      }
+      const post = handleLocalRequest('/api/recurring', {
+        method: 'POST',
+        body: JSON.stringify(unknown),
+      })
+      expect(post.status).toBe(400)
+
+      const seed = handleLocalRequest('/api/recurring', {
+        method: 'POST',
+        body: JSON.stringify({ ...unknown, category: 'housing' }),
+      })
+      const id = (seed.body as { id: string }).id
+      const patch = handleLocalRequest(`/api/recurring/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(unknown),
+      })
+      expect(patch.status).toBe(400)
+      handleLocalRequest(`/api/recurring/${id}`, { method: 'DELETE' })
+    })
+
+    it('accepts a recurring template using a custom category', () => {
+      const created = handleLocalRequest('/api/categories', {
+        method: 'POST',
+        body: JSON.stringify({ label: 'Sports', color: '#84cc16', aliases: [] }),
+      })
+      const key = (created.body as { key: string }).key
+      const result = handleLocalRequest('/api/recurring', {
+        method: 'POST',
+        body: JSON.stringify({
+          description: 'Swimming pool',
+          amount: 1600,
+          type: 'expense',
+          category: key,
+          interval: 'monthly',
+          startDate: '2026-08-01',
+          endDate: null,
+          active: true,
+        }),
+      })
+      expect(result.status).toBe(201)
+      handleLocalRequest(`/api/recurring/${(result.body as { id: string }).id}`, {
+        method: 'DELETE',
+      })
+    })
+  })
+
+  it('restores a deleted recurring template with its exact state', () => {
+    const seed = handleLocalRequest('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Rent',
+        amount: 20000,
+        type: 'expense',
+        category: 'housing',
+        interval: 'monthly',
+        startDate: '2026-08-01',
+        endDate: null,
+        active: true,
+      }),
+    })
+    const template = seed.body as {
+      id: string
+      description: string
+      amount: number
+      type: string
+      category: string
+      interval: string
+      startDate: string
+      endDate: string | null
+      active: boolean
+      lastPostedDate: string | null
+    }
+    handleLocalRequest(`/api/recurring/${template.id}`, { method: 'DELETE' })
+
+    const restored = handleLocalRequest(`/api/recurring/${template.id}/restore`, {
+      method: 'POST',
+      body: JSON.stringify({ ...template, lastPostedDate: '2026-08-01' }),
+    })
+    expect(restored.status).toBe(200)
+    const list = handleLocalRequest('/api/recurring').body as Array<{
+      id: string
+      lastPostedDate: string | null
+    }>
+    const restoredRows = list.filter((entry) => entry.id === template.id)
+    expect(restoredRows).toHaveLength(1)
+    expect(restoredRows[0].lastPostedDate).toBe('2026-08-01')
+
+    handleLocalRequest(`/api/recurring/${template.id}`, { method: 'DELETE' })
+  })
+
+  it('rejects a malformed restore payload with 400', () => {
+    const restored = handleLocalRequest('/api/recurring/x/restore', {
+      method: 'POST',
+      body: JSON.stringify({ description: 'Rent' }),
+    })
+    expect(restored.status).toBe(400)
+  })
+
   it('restores the catalogue through PUT /api/data', () => {
     handleLocalRequest('/api/categories', {
       method: 'POST',

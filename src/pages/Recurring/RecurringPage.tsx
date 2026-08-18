@@ -4,10 +4,12 @@ import { RecurringForm } from '../../entities/recurring/ui/RecurringForm'
 import type { RecurringInput } from '../../entities/recurring/model/types'
 import { upcomingScheduledDate } from '../../features/recurring/schedule'
 import { Modal } from '../../shared/ui/Modal'
+import { Toast } from '../../shared/ui/Toast'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { formatCurrency } from '../../shared/lib/format'
 import { useCategories } from '../../shared/hooks/useCategories'
 import { useRecurring } from '../../shared/hooks/useRecurring'
+import { useUndoableDelete } from '../../shared/hooks/useUndoableDelete'
 import './RecurringPage.css'
 import '../../shared/ui/form.css'
 
@@ -24,9 +26,15 @@ function intervalLabel(interval: string): string {
 }
 
 export function RecurringPage() {
-  const { recurring, addRecurring, updateRecurring, removeRecurring, isPending, isError, refetch, saveState } =
+  const { recurring, addRecurring, updateRecurring, removeRecurring, restoreRecurring, isPending, isError, refetch, saveState } =
     useRecurring()
   const { categories } = useCategories()
+  const { requestDelete, restorePending, clearUndo, pendingUndo } = useUndoableDelete({
+    message: 'Recurring template deleted',
+    remove: removeRecurring,
+    restore: restoreRecurring,
+    find: (id) => recurring.find((template) => template.id === id),
+  })
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -149,7 +157,7 @@ export function RecurringPage() {
                   <button
                     type="button"
                     className="action-button action-button--danger"
-                    onClick={() => void removeRecurring(template.id)}
+                    onClick={() => requestDelete(template.id)}
                   >
                     Delete
                   </button>
@@ -171,6 +179,14 @@ export function RecurringPage() {
             onCancel={closeForm}
           />
         </Modal>
+      )}
+
+      {pendingUndo !== null && (
+        <Toast
+          message={pendingUndo.message}
+          onUndo={() => restorePending(pendingUndo.item)}
+          onClose={clearUndo}
+        />
       )}
     </section>
   )

@@ -8,6 +8,9 @@ export interface RecurringRepository {
   // Engine-only: the generator moves `lastPostedDate` forward after
   // it turned the next period into transactions.
   advance(id: string, lastPostedDate: string): RecurringDef
+  // Undo support: brings a deleted template back with its original id
+  // and lastPostedDate, so the engine does not re-post old periods.
+  restore(template: RecurringDef): RecurringDef
   delete(id: string): void
   replaceAll(next: readonly RecurringDef[]): void
 }
@@ -60,6 +63,15 @@ function createRecurringRepository(
       recurring = recurring.map((template) => (template.id === id ? updated : template))
       persist(recurring)
       return updated
+    },
+
+    restore(template) {
+      recurring = [
+        template,
+        ...recurring.filter((item) => item.id !== template.id),
+      ]
+      persist(recurring)
+      return template
     },
 
     delete(id) {

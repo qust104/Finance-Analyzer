@@ -31,6 +31,16 @@ export function deleteRecurring(id: string): Promise<void> {
   return request(`/api/recurring/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
 
+// Restores a deleted template with its original id and lastPostedDate:
+// a plain create would reset the engine clock and re-post old periods.
+export function restoreRecurring(template: RecurringDef): Promise<RecurringDef> {
+  return request(`/api/recurring/${encodeURIComponent(template.id)}/restore`, {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(template),
+  })
+}
+
 // Runs the recurring engine: creates the due transactions and advances
 // the templates. Idempotent — repeating the call creates nothing new.
 export function applyRecurring(): Promise<{ created: number }> {

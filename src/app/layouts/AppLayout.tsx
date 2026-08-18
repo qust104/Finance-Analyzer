@@ -1,11 +1,11 @@
-import { Suspense, useEffect } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
-import { applyRecurring } from '../../api/recurring'
+import { Suspense } from 'react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { CommandPalette } from '../../shared/command-palette/CommandPalette'
 import { useCommandPaletteStore } from '../../shared/command-palette/useCommandPalette'
 import { LoadingState } from '../../shared/ui/AsyncStates'
 import { ThemeToggle } from '../../shared/ui/ThemeToggle'
+import { Toast } from '../../shared/ui/Toast'
+import { useRecurringMaintenance } from './useRecurringMaintenance'
 import './AppLayout.css'
 
 const NAV_ITEMS = [
@@ -18,31 +18,8 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'Settings' },
 ] as const
 
-// One run per app start: the engine posts the due recurring rows and
-// advances the templates. Safe to repeat — fingerprints keep it from
-// creating duplicates, so a crashed run simply retries next open.
-function useRecurringMaintenance() {
-  const queryClient = useQueryClient()
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      try {
-        const { created } = await applyRecurring()
-        if (created > 0 && !cancelled) {
-          void queryClient.invalidateQueries({ queryKey: ['transactions'] })
-        }
-      } catch {
-        // Best-effort: a failed run is retried on the next app start.
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [queryClient])
-}
-
 export function AppLayout() {
-  useRecurringMaintenance()
+  const { result, error, dismiss } = useRecurringMaintenance()
   const openCommandPalette = useCommandPaletteStore((state) => state.open)
   return (
     <div className="layout">
@@ -77,6 +54,20 @@ export function AppLayout() {
         </Suspense>
       </main>
       <CommandPalette />
+      {result !== null && (
+        <Toast onClose={dismiss} autoDismissMs={4000}>
+          Added {result.created} recurring transaction{result.created > 1 ? 's' : ''}.{' '}
+          <Link to="/transactions?sort=date&dir=desc">View</Link>
+        </Toast>
+      )}
+      {error !== null && (
+        <Toast
+          variant="error"
+          message={`Couldn't check recurring transactions: ${error}`}
+          onClose={dismiss}
+          autoDismissMs={6000}
+        />
+      )}
     </div>
   )
 }

@@ -11,6 +11,7 @@ export interface RecurringApi {
   addRecurring: (input: RecurringInput) => Promise<void>
   updateRecurring: (id: string, input: RecurringInput) => Promise<void>
   removeRecurring: (id: string) => void
+  restoreRecurring: (template: RecurringDef) => Promise<void>
   refetch: () => void
   saveState: { isPending: boolean; error: string | null }
 }
@@ -37,6 +38,10 @@ export function useRecurring(): RecurringApi {
     mutationFn: (id: string) => api.deleteRecurring(id),
     onSuccess: invalidate,
   })
+  const restore = useMutation({
+    mutationFn: api.restoreRecurring,
+    onSuccess: invalidate,
+  })
 
   const addRecurring = useCallback(
     (input: RecurringInput) => create.mutateAsync(input).then(() => undefined),
@@ -48,6 +53,10 @@ export function useRecurring(): RecurringApi {
     [update],
   )
   const removeRecurring = useCallback((id: string) => remove.mutate(id), [remove])
+  const restoreRecurring = useCallback(
+    (template: RecurringDef) => restore.mutateAsync(template).then(() => undefined),
+    [restore],
+  )
   const refetch = useCallback(() => {
     void query.refetch()
   }, [query])
@@ -59,6 +68,7 @@ export function useRecurring(): RecurringApi {
     addRecurring,
     updateRecurring,
     removeRecurring,
+    restoreRecurring,
     refetch,
     saveState: {
       isPending: anyMutationPending(create, update),

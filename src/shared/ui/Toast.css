@@ -18,6 +18,17 @@
   font-size: 14px;
 }
 
+.toast__message a {
+  color: #8ab4f8;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.toast--error {
+  background: #4a1420;
+  color: #ffd9de;
+}
+
 .toast__undo {
   border: none;
   background: transparent;
