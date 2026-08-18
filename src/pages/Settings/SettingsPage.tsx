@@ -11,6 +11,7 @@ import { useCategories } from '../../shared/hooks/useCategories'
 import { useRecurring } from '../../shared/hooks/useRecurring'
 import { useTransactions } from '../../shared/hooks/useTransactions'
 import { PageContainer } from '../../shared/ui/PageContainer'
+import { ProfileCard } from '../../shared/ui/ProfileCard'
 import './SettingsPage.css'
 
 export function SettingsPage() {
@@ -79,7 +80,8 @@ export function SettingsPage() {
   const dataReady = !transactionsPending && !budgetsPending && !categoriesPending && !recurringPending
 
   return (
-    <PageContainer title="Settings">
+    <PageContainer>
+      <ProfileCard />
       <div className="settings-card">
         <h2 className="settings-card__title">Backup &amp; Restore</h2>
         <p className="settings-card__hint">

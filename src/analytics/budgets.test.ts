@@ -19,6 +19,7 @@ const transaction = (overrides: Partial<Transaction> = {}): Transaction => ({
   type: 'expense',
   category: 'food',
   description: 'Test',
+  account: 'Checking Account',
   ...overrides,
 })
 

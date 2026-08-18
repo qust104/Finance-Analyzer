@@ -30,11 +30,13 @@ afterEach(() => {
 // a mobile card, so button counts would change by two per row.
 async function renderPage() {
   const { TransactionsPage } = await import('./TransactionsPage')
+  const { TransactionFormModal } = await import('../../entities/transaction/ui/TransactionFormModal')
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/transactions']}>
         <TransactionsPage />
+        <TransactionFormModal />
       </MemoryRouter>
     </QueryClientProvider>,
   )

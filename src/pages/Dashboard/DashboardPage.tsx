@@ -1,6 +1,8 @@
 import { useBudgets } from '../../shared/hooks/useBudgets'
 import { useCategories } from '../../shared/hooks/useCategories'
 import { useTransactions } from '../../shared/hooks/useTransactions'
+import { resolveReportMonth } from '../../analytics/budgets'
+import { useUiStore } from '../../shared/store/uiStore'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { BudgetOverview } from './BudgetOverview'
 import { CashFlowChart } from './CashFlowChart'
@@ -19,11 +21,12 @@ export function DashboardPage() {
     refetch: refetchBudgets,
   } = useBudgets()
   const { categories, isPending: categoriesPending } = useCategories()
+  const reportMonth = useUiStore((state) => state.reportMonth)
+  const month = reportMonth ?? resolveReportMonth(transactions).month
 
   if (isPending || budgetsPending || categoriesPending) {
     return (
       <section>
-        <h1 className="page-title">Dashboard</h1>
         <LoadingState />
       </section>
     )
@@ -32,7 +35,6 @@ export function DashboardPage() {
   if ((isError && transactions.length === 0) || (budgetsError && budgets.length === 0)) {
     return (
       <section>
-        <h1 className="page-title">Dashboard</h1>
         <ErrorState
           onRetry={() => {
             void refetch()
@@ -45,16 +47,20 @@ export function DashboardPage() {
 
   return (
     <section>
-      <h1 className="page-title">Dashboard</h1>
-      <FinancialSummary transactions={transactions} />
+      <FinancialSummary transactions={transactions} month={month} />
       <div className="dashboard-grid">
         <CashFlowChart transactions={transactions} />
-        <SpendingByCategory transactions={transactions} categories={categories} />
-        <BudgetOverview transactions={transactions} budgets={budgets} categories={categories} />
+        <SpendingByCategory transactions={transactions} categories={categories} month={month} />
+        <BudgetOverview
+          transactions={transactions}
+          budgets={budgets}
+          categories={categories}
+          month={month}
+        />
         <RecentTransactions transactions={transactions} categories={categories} />
       </div>
       <div className="dashboard-insights">
-        <FinancialInsights transactions={transactions} budgets={budgets} />
+        <FinancialInsights transactions={transactions} budgets={budgets} month={month} />
       </div>
     </section>
   )

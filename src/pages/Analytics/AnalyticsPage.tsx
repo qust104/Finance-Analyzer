@@ -20,7 +20,6 @@ export function AnalyticsPage() {
   if (isPending || categoriesPending) {
     return (
       <section>
-        <h1 className="page-title">Analytics</h1>
         <LoadingState />
       </section>
     )
@@ -29,7 +28,6 @@ export function AnalyticsPage() {
   if (isError && transactions.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Analytics</h1>
         <ErrorState onRetry={refetch} />
       </section>
     )
@@ -38,7 +36,6 @@ export function AnalyticsPage() {
   if (transactions.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Analytics</h1>
         <div className="analytics-card">
           <p className="analytics-card__empty">
             Add transactions to see trends, category breakdowns and month-over-month comparisons.
@@ -50,7 +47,6 @@ export function AnalyticsPage() {
 
   return (
     <section>
-      <h1 className="page-title">Analytics</h1>
 
       <div className="analytics-summary">
         <div className="analytics-summary__item">

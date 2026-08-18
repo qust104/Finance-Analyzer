@@ -10,7 +10,7 @@ import './TransactionList.css'
 const ROW_HEIGHT = 48
 const VIRTUALIZE_THRESHOLD = 1500
 const OVERSCAN = 8
-const COLUMN_COUNT = 6
+const COLUMN_COUNT = 7
 
 interface TransactionRowProps {
   transaction: Transaction
@@ -35,6 +35,7 @@ function TransactionRow({
       <td>{formatDate(transaction.date)}</td>
       <td>{transaction.description}</td>
       <td>{categoryLabelOf(categories, transaction.category)}</td>
+      <td className="transaction-account">{transaction.account}</td>
       <td>
         <span className={`transaction-type transaction-type--${transaction.type}`}>
           {TYPE_LABELS[transaction.type]}
@@ -151,6 +152,7 @@ export function TransactionList({
             <th scope="col">Date</th>
             <th scope="col">Description</th>
             <th scope="col">Category</th>
+            <th scope="col">Account</th>
             <th scope="col">Type</th>
             <th scope="col" className="transaction-table__amount">
               Amount

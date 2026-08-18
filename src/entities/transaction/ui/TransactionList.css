@@ -60,6 +60,10 @@
   white-space: nowrap;
 }
 
+.transaction-account {
+  color: var(--text-secondary);
+}
+
 .transaction-amount--income {
   color: var(--income);
   font-weight: 600;
@@ -96,7 +100,7 @@
 .transaction-card {
   background: var(--surface);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 

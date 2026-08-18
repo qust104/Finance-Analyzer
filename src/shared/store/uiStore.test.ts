@@ -10,6 +10,7 @@ const transaction: Transaction = {
   type: 'expense',
   category: 'food',
   description: 'Lunch',
+  account: 'Checking Account',
 }
 
 const budget: Budget = {

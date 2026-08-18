@@ -283,6 +283,9 @@ test('virtualizes a large transaction list', async ({ page }) => {
 
 test('imports a CSV file dropped onto the page', async ({ page }) => {
   await page.goto('/transactions')
+  // The drop listeners attach to window when the (lazy) page mounts;
+  // dispatching while the loader is still up would silently no-op.
+  await expect(page.locator('table').first()).toBeVisible()
 
   const csv = 'date,description,amount,type,category\n2026-08-05,Dropped drone,700,expense,other'
   const dataTransfer = await page.evaluateHandle((text) => {

@@ -45,7 +45,15 @@
 
 .recent-transactions__category {
   color: var(--text-muted);
-  width: 110px;
+  width: 90px;
+}
+
+.recent-transactions__account {
+  color: var(--text-muted);
+  width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .recent-transactions__date {

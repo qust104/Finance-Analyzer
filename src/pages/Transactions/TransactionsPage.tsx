@@ -8,11 +8,9 @@ import {
   getAvailableMonths,
   hasActiveFilters,
 } from '../../entities/transaction/model/filters'
-import { TransactionForm } from '../../entities/transaction/ui/TransactionForm'
 import { TransactionCard } from '../../entities/transaction/ui/TransactionCard'
 import { TransactionFilters } from '../../entities/transaction/ui/TransactionFilters'
 import { TransactionList } from '../../entities/transaction/ui/TransactionList'
-import { Modal } from '../../shared/ui/Modal'
 import { ErrorState, LoadingState } from '../../shared/ui/AsyncStates'
 import { Toast } from '../../shared/ui/Toast'
 import { useTransactions } from '../../shared/hooks/useTransactions'
@@ -29,12 +27,10 @@ export function TransactionsPage() {
     transactions,
     addTransaction,
     addTransactions,
-    updateTransaction,
     removeTransaction,
     isPending,
     isError,
     refetch,
-    saveState,
     importState,
   } = useTransactions()
   const { categories } = useCategories()
@@ -50,11 +46,10 @@ export function TransactionsPage() {
         type: transaction.type,
         category: transaction.category,
         description: transaction.description,
+        account: transaction.account,
       }),
   })
-  const editing = useUiStore((state) => state.transactionForm)
   const openTransactionForm = useUiStore((state) => state.openTransactionForm)
-  const closeTransactionForm = useUiStore((state) => state.closeTransactionForm)
   const importOpen = useUiStore((state) => state.importOpen)
   const openImportModal = useUiStore((state) => state.openImportModal)
   const closeImportModal = useUiStore((state) => state.closeImportModal)
@@ -133,22 +128,6 @@ export function TransactionsPage() {
   )
   const months = useMemo(() => getAvailableMonths(transactions), [transactions])
 
-  const handleSubmit = useCallback(
-    async (input: TransactionInput) => {
-      try {
-        if (editing === 'new') {
-          await addTransaction(input)
-        } else if (editing) {
-          await updateTransaction(editing.id, input)
-        }
-        closeTransactionForm()
-      } catch {
-        // saveState.error explains the failure, the form stays open.
-      }
-    },
-    [editing, addTransaction, updateTransaction, closeTransactionForm],
-  )
-
   const handleImport = useCallback(
     async (inputs: readonly TransactionInput[]) => {
       try {
@@ -194,7 +173,6 @@ export function TransactionsPage() {
   if (isPending) {
     return (
       <section>
-        <h1 className="page-title">Transactions</h1>
         <LoadingState />
       </section>
     )
@@ -203,7 +181,6 @@ export function TransactionsPage() {
   if (isError && transactions.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Transactions</h1>
         <ErrorState onRetry={refetch} />
       </section>
     )
@@ -212,7 +189,6 @@ export function TransactionsPage() {
   return (
     <section>
       <div className="transactions-header">
-        <h1 className="page-title">Transactions</h1>
         <div className="transactions-header__actions">
           <button
             type="button"
@@ -286,22 +262,6 @@ export function TransactionsPage() {
             ))}
           </ul>
         </>
-      )}
-
-      {editing !== null && (
-        <Modal
-          title={editing === 'new' ? 'Add transaction' : 'Edit transaction'}
-          onClose={closeTransactionForm}
-        >
-          <TransactionForm
-            initialValue={editing === 'new' ? undefined : editing}
-            categories={categories}
-            submitError={saveState.error}
-            isSubmitting={saveState.isPending}
-            onSubmit={handleSubmit}
-            onCancel={closeTransactionForm}
-          />
-        </Modal>
       )}
 
       {importOpen && (

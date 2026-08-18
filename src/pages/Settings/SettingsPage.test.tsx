@@ -43,6 +43,7 @@ const transactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Restored lunch',
+    account: 'Checking Account',
   },
 ]
 

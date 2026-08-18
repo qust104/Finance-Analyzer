@@ -32,6 +32,7 @@ export const TransactionCard = memo(function TransactionCard({
       <p className="transaction-card__description">{transaction.description}</p>
       <div className="transaction-card__meta">
         <span>{categoryLabelOf(categories, transaction.category)}</span>
+        <span>{transaction.account}</span>
         <span>{formatDate(transaction.date)}</span>
       </div>
       <div className="transaction-card__actions">

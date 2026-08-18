@@ -34,7 +34,6 @@ describe('analytics page', () => {
   it('renders trend, breakdown and comparison from seeded data', async () => {
     await renderPage()
 
-    expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
     expect(screen.getByText('Spending by Category')).toBeInTheDocument()
     expect(screen.getByText('Month Comparison')).toBeInTheDocument()
   })

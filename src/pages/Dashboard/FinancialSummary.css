@@ -10,7 +10,7 @@
 .stat-card {
   background: var(--surface);
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -35,4 +35,22 @@
 
 .stat-card--negative .stat-card__value {
   color: var(--expense);
+}
+
+.stat-card__delta {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stat-card__delta--up {
+  color: var(--income);
+}
+
+.stat-card__delta--down {
+  color: var(--expense);
+}
+
+.stat-card__delta [aria-hidden] {
+  font-weight: 400;
+  opacity: 0.7;
 }

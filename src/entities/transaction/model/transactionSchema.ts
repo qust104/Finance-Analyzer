@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DEFAULT_ACCOUNT } from './types'
 import type { Category } from './types'
 
 // One schema is the single source of truth for validation rules:
@@ -27,6 +28,9 @@ export const transactionSchema = z.object({
     // The form sends a raw string; the validated output is the domain
     // type, so the API layer receives a ready TransactionInput.
     .transform((value) => value as Category),
+  // Missing account (legacy clients, CSV rows) falls back to the
+  // default; the validated output always carries a non-empty label.
+  account: z.string().min(1, { error: 'Account is required' }).default(DEFAULT_ACCOUNT),
 })
 
 // Form values are strings because HTML inputs always produce strings;

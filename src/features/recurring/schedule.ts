@@ -1,6 +1,7 @@
 import type { RecurringDef } from '../../entities/recurring/model/types'
 import { transactionFingerprint } from '../import-transactions/csvImport'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
+import { DEFAULT_ACCOUNT } from '../../entities/transaction/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 
 // A fresh template found years of due periods would flood the ledger
@@ -118,6 +119,7 @@ export function computeRecurringPlan(
           type: template.type,
           category: template.category,
           description: template.description,
+          account: DEFAULT_ACCOUNT,
         })
       }
       processed = date

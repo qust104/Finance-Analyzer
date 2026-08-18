@@ -74,7 +74,6 @@ export function RecurringPage() {
   if (isPending) {
     return (
       <section>
-        <h1 className="page-title">Recurring</h1>
         <LoadingState />
       </section>
     )
@@ -83,7 +82,6 @@ export function RecurringPage() {
   if (isError && recurring.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Recurring</h1>
         <ErrorState onRetry={refetch} />
       </section>
     )
@@ -94,7 +92,6 @@ export function RecurringPage() {
   return (
     <section>
       <div className="recurring-header">
-        <h1 className="page-title">Recurring</h1>
         <button type="button" className="button button--primary" onClick={openCreate}>
           Add template
         </button>
