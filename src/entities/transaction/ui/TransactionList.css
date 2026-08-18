@@ -1,5 +1,13 @@
+/* Scrolling viewport: rows are windowed inside once the list grows past
+   the virtualization threshold (see TransactionList.tsx). */
+.transaction-table__window {
+  max-height: min(70vh, 640px);
+  overflow-y: auto;
+}
+
 .transaction-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   background: var(--surface);
   border-radius: 12px;
@@ -23,6 +31,21 @@
   padding: 12px 16px;
   font-size: 14px;
   border-bottom: 1px solid var(--border-finer);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Row heights must match the ROW_HEIGHT constant so spacer rows keep the
+   scrollbar in sync while the visible window is only a slice. */
+.transaction-table tbody tr {
+  height: 48px;
+}
+
+.transaction-table__spacer td {
+  height: auto;
+  padding: 0;
+  border: none;
 }
 
 /* Row picked from the command palette: visible entry point, the URL
