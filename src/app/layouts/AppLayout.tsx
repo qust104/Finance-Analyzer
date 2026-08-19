@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import {
-  BarChart3,
-  LayoutDashboard,
-  List,
+  BarChart2,
+  ChevronUp,
+  FileText,
+  Home,
   PiggyBank,
   Repeat,
   Settings,
@@ -31,12 +32,12 @@ interface NavItem {
 const NAV_GROUPS: { label: string; items: readonly NavItem[] }[] = [
   {
     label: 'Overview',
-    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ to: '/dashboard', label: 'Dashboard', icon: Home }],
   },
   {
     label: 'Money',
     items: [
-      { to: '/transactions', label: 'Transactions', icon: List },
+      { to: '/transactions', label: 'Transactions', icon: FileText },
       { to: '/budgets', label: 'Budgets', icon: PiggyBank },
       { to: '/categories', label: 'Categories', icon: Tag },
       { to: '/recurring', label: 'Recurring', icon: Repeat },
@@ -44,7 +45,7 @@ const NAV_GROUPS: { label: string; items: readonly NavItem[] }[] = [
   },
   {
     label: 'Analytics',
-    items: [{ to: '/analytics', label: 'Analytics', icon: BarChart3 }],
+    items: [{ to: '/analytics', label: 'Analytics', icon: BarChart2 }],
   },
   {
     label: 'System',
@@ -59,7 +60,16 @@ export function AppLayout() {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="sidebar__brand">Finance Analyzer</div>
+        <div className="sidebar__brand">
+          <span className="sidebar__brand-logo" aria-hidden="true">
+            <BarChart2 size={20} />
+          </span>
+          <span className="sidebar__brand-name">
+            Finance
+            <br />
+            <strong>Analyzer</strong>
+          </span>
+        </div>
         <nav className="sidebar__nav" aria-label="Main">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="sidebar__group">
@@ -91,10 +101,19 @@ export function AppLayout() {
           Search
         </button>
         <div className="sidebar__footer">
-          <ThemeToggle />
           <NavLink to="/settings" className="sidebar__profile" aria-label="Profile">
-            <ProfileBadge compact displayName={profile.displayName} avatarInitials={profile.avatarInitials} />
+            <ProfileBadge
+              displayName={profile.displayName}
+              avatarInitials={profile.avatarInitials}
+              email={profile.email}
+            />
           </NavLink>
+          <span className="sidebar__footer-chevron" aria-hidden="true">
+            <ChevronUp size={14} />
+          </span>
+        </div>
+        <div className="sidebar__footer-row">
+          <ThemeToggle />
         </div>
       </aside>
       <main className="layout__main">

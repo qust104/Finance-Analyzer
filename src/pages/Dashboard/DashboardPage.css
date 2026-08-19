@@ -9,6 +9,39 @@
   margin-top: 16px;
 }
 
+.welcome {
+  margin-top: 24px;
+}
+
+.welcome__greeting {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.welcome__subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.welcome__compare {
+  margin: 12px 0 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.welcome__info {
+  display: inline-flex;
+  color: var(--text-muted);
+  cursor: help;
+}
+
 @media (max-width: 980px) {
   .dashboard-grid {
     grid-template-columns: 1fr;

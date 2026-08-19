@@ -17,6 +17,36 @@
   box-shadow: var(--shadow-card);
 }
 
+.stat-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.stat-card__icon--blue {
+  background: var(--badge-blue-bg);
+  color: var(--badge-blue-fg);
+}
+
+.stat-card__icon--green {
+  background: var(--badge-green-bg);
+  color: var(--badge-green-fg);
+}
+
+.stat-card__icon--red {
+  background: var(--badge-red-bg);
+  color: var(--badge-red-fg);
+}
+
+.stat-card__icon--purple {
+  background: var(--badge-purple-bg);
+  color: var(--badge-purple-fg);
+}
+
 .stat-card__label {
   font-size: 13px;
   font-weight: 600;
@@ -42,11 +72,13 @@
   font-weight: 600;
 }
 
-.stat-card__delta--up {
+/* Tone follows metric semantics: a falling expense is good (green),
+   a rising one is bad (red); arrows keep the arithmetic sign. */
+.stat-card__delta--good {
   color: var(--income);
 }
 
-.stat-card__delta--down {
+.stat-card__delta--bad {
   color: var(--expense);
 }
 

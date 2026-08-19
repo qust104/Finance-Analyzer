@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import { ArrowDown, ArrowUp, Percent, PiggyBank, Wallet, type LucideIcon } from 'lucide-react'
 import { formatCurrency, formatMonthKey, formatPercent } from '../../shared/lib/format'
 import { compareMonthMetric } from '../../analytics/comparison'
 import { calculateBalance } from '../../analytics/calculations'
@@ -10,12 +11,17 @@ interface FinancialSummaryProps {
   month: string
 }
 
+// Delta tone follows the metric's semantics, not the arithmetic sign:
+// a falling expense number is good, so it gets the green tone, while
+// a rising expense is bad and turns red. The arrow keeps the sign.
 interface SummaryCard {
   label: string
   value: string
   tone: 'neutral' | 'positive' | 'negative'
+  icon: LucideIcon
+  iconTone: 'blue' | 'green' | 'red' | 'purple'
   delta: string | null
-  deltaTone: 'up' | 'down' | null
+  deltaTone: 'good' | 'bad' | null
 }
 
 // Monthly cards compare the selected month against the previous one;
@@ -34,7 +40,9 @@ export const FinancialSummary = memo(function FinancialSummary({
 
     const deltaOf = (
       comparison: { changePercent: number | null; changePoints: number | null; previous: number | null },
-    ): { delta: string | null; deltaTone: 'up' | 'down' | null } => {
+      // When true, an increase is a good thing for the user.
+      upIsGood: boolean,
+    ): { delta: string | null; deltaTone: 'good' | 'bad' | null } => {
       if (comparison.previous === null) {
         return { delta: null, deltaTone: null }
       }
@@ -43,11 +51,14 @@ export const FinancialSummary = memo(function FinancialSummary({
       if (points === null && percent === null) {
         return { delta: null, deltaTone: null }
       }
-      const text =
+      const change = points ?? percent!
+      const arrow = change > 0 ? '\u2191' : change < 0 ? '\u2193' : ''
+      const magnitude =
         points !== null
-          ? `${points > 0 ? '+' : ''}${Math.abs(points).toFixed(1)} pp`
-          : `${percent! > 0 ? '+' : ''}${formatPercent(Math.abs(percent!))}`
-      return { delta: text, deltaTone: (points ?? percent)! > 0 ? 'up' : 'down' }
+          ? `${Math.abs(points).toFixed(1)} pp`
+          : formatPercent(Math.abs(percent!))
+      const good = upIsGood ? change > 0 : change < 0
+      return { delta: `${arrow} ${magnitude}`, deltaTone: change === 0 ? null : good ? 'good' : 'bad' }
     }
 
     return [
@@ -55,6 +66,8 @@ export const FinancialSummary = memo(function FinancialSummary({
         label: 'Total Balance',
         value: formatCurrency(balance),
         tone: 'neutral' as const,
+        icon: Wallet,
+        iconTone: 'blue' as const,
         delta: null,
         deltaTone: null,
       },
@@ -62,45 +75,59 @@ export const FinancialSummary = memo(function FinancialSummary({
         label: 'Income',
         value: formatCurrency(income.current),
         tone: 'positive' as const,
-        ...deltaOf(income),
+        icon: ArrowDown,
+        iconTone: 'green' as const,
+        ...deltaOf(income, true),
       },
       {
         label: 'Expenses',
         value: formatCurrency(expenses.current),
         tone: 'negative' as const,
-        ...deltaOf(expenses),
+        icon: ArrowUp,
+        iconTone: 'red' as const,
+        ...deltaOf(expenses, false),
       },
       {
         label: 'Savings',
         value: formatCurrency(savings.current),
         tone: 'positive' as const,
-        ...deltaOf(savings),
+        icon: PiggyBank,
+        iconTone: 'green' as const,
+        ...deltaOf(savings, true),
       },
       {
         label: 'Savings Rate',
         value: formatPercent(savingsRate.current),
         tone: 'neutral' as const,
-        ...deltaOf(savingsRate),
+        icon: Percent,
+        iconTone: 'purple' as const,
+        ...deltaOf(savingsRate, true),
       },
     ]
   }, [transactions, month])
 
   return (
     <ul className="financial-summary">
-      {cards.map((card) => (
-        <li key={card.label} className={`stat-card stat-card--${card.tone}`}>
-          <span className="stat-card__label">{card.label}</span>
-          <span className="stat-card__value">{card.value}</span>
-          {card.delta !== null && (
-            <span
-              className={`stat-card__delta stat-card__delta--${card.deltaTone}`}
-              aria-label={`vs ${formatMonthKey(month)}`}
-            >
-              {card.delta} <span aria-hidden="true">vs prev.</span>
+      {cards.map((card) => {
+        const Icon = card.icon
+        return (
+          <li key={card.label} className={`stat-card stat-card--${card.tone}`}>
+            <span className={`stat-card__icon stat-card__icon--${card.iconTone}`} aria-hidden="true">
+              <Icon size={18} />
             </span>
-          )}
-        </li>
-      ))}
+            <span className="stat-card__label">{card.label}</span>
+            <span className="stat-card__value">{card.value}</span>
+            {card.delta !== null && (
+              <span
+                className={`stat-card__delta stat-card__delta--${card.deltaTone}`}
+                aria-label={`vs ${formatMonthKey(month)}`}
+              >
+                {card.delta} <span aria-hidden="true">vs prev.</span>
+              </span>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 })

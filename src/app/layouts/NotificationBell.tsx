@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, Lightbulb, TrendingUp, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { generateInsights } from '../../analytics/insights'
 import type { Insight } from '../../analytics/insights'
 import { useBudgets } from '../../shared/hooks/useBudgets'
@@ -24,10 +24,10 @@ function writeSeen(ids: string[]): void {
   localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(ids))
 }
 
-const INSIGHT_ICONS: Record<Insight['type'], string> = {
-  warning: '\u0021',
-  positive: '\u2713',
-  info: 'i',
+const INSIGHT_ICONS: Record<Insight['type'], LucideIcon> = {
+  warning: TriangleAlert,
+  positive: TrendingUp,
+  info: Lightbulb,
 }
 
 // Bell in the app header: the same derived insights as the dashboard
@@ -107,17 +107,23 @@ export function NotificationBell() {
             <p className="notification-bell__empty">No notifications yet.</p>
           ) : (
             <ul className="notification-bell__list">
-              {insights.map((insight) => (
-                <li key={insight.id} className={`notification notification--${insight.type}`}>
-                  <span className={`notification__icon notification__icon--${insight.type}`} aria-hidden="true">
-                    {INSIGHT_ICONS[insight.type]}
-                  </span>
-                  <div className="notification__body">
-                    <p className="notification__title">{insight.title}</p>
-                    <p className="notification__description">{insight.description}</p>
-                  </div>
-                </li>
-              ))}
+              {insights.map((insight) => {
+                const Icon = INSIGHT_ICONS[insight.type]
+                return (
+                  <li key={insight.id} className={`notification notification--${insight.type}`}>
+                    <span
+                      className={`notification__icon notification__icon--${insight.type}`}
+                      aria-hidden="true"
+                    >
+                      <Icon size={14} />
+                    </span>
+                    <div className="notification__body">
+                      <p className="notification__title">{insight.title}</p>
+                      <p className="notification__description">{insight.description}</p>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>

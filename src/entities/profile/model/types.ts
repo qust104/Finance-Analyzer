@@ -1,11 +1,13 @@
 export interface UserProfile {
   displayName: string
   avatarInitials: string
+  email?: string
 }
 
 export const DEFAULT_PROFILE: UserProfile = {
   displayName: 'You',
   avatarInitials: 'Y',
+  email: 'hello@finance.app',
 }
 
 export function initialsOf(name: string): string {
