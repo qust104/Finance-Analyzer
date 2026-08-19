@@ -1,9 +1,13 @@
 .app-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
+}
+
+.app-header__heading {
+  min-width: 0;
 }
 
 .app-header__title {
@@ -11,6 +15,12 @@
   font-weight: 700;
   margin: 0;
   color: var(--text);
+}
+
+.app-header__subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
 .app-header__actions {
@@ -24,14 +34,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
 }
 
 .app-header__profile {
   text-decoration: none;
-  border-radius: 10px;
-  padding: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border-radius: 50%;
+  padding: 2px;
+  background: transparent;
 }
 
 .app-header__profile:hover {
@@ -44,11 +55,18 @@
   align-items: center;
 }
 
+.period-selector__calendar {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
 .period-selector__select {
   appearance: none;
-  padding: 8px 28px 8px 12px;
+  padding: 8px 30px 8px 34px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--surface);
   font-family: inherit;
   font-size: 13px;

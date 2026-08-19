@@ -18,28 +18,40 @@
 }
 
 .insight__icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffffff;
 }
 
 .insight__icon--warning {
-  background: var(--expense);
+  background: var(--badge-amber-bg);
+  color: var(--badge-amber-fg);
 }
 
 .insight__icon--positive {
-  background: var(--income);
+  background: var(--badge-green-bg);
+  color: var(--badge-green-fg);
 }
 
 .insight__icon--info {
-  background: var(--accent);
+  background: var(--badge-info-bg);
+  color: var(--badge-info-fg);
+}
+
+.insight__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.insight__chevron {
+  flex: none;
+  align-self: center;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
 .insight__title {

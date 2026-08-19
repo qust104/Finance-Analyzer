@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { categoryLabelOf } from '../../entities/category/model/catalog'
+import { categoryColorOf, categoryLabelOf } from '../../entities/category/model/catalog'
 import type { CategoryDef } from '../../entities/category/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 import { formatAmount, formatDate } from '../../shared/lib/format'
@@ -32,7 +32,13 @@ export const RecentTransactions = memo(function RecentTransactions({
         {recent.map((transaction) => (
           <li key={transaction.id} className="recent-transactions__item">
             <span className="recent-transactions__description">{transaction.description}</span>
-            <span className="recent-transactions__category">
+            <span
+              className="recent-transactions__category"
+              style={{
+                color: categoryColorOf(categories, transaction.category),
+                background: `${categoryColorOf(categories, transaction.category)}1a`,
+              }}
+            >
               {categoryLabelOf(categories, transaction.category)}
             </span>
             <span className="recent-transactions__account">{transaction.account}</span>

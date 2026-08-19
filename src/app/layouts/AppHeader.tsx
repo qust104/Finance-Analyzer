@@ -7,26 +7,37 @@ import { NotificationBell } from './NotificationBell'
 import { PeriodSelector } from './PeriodSelector'
 import './AppHeader.css'
 
-// Each route carries a handle: { title }; the deepest match names the
-// page the header is rendering for, so pages don't repeat their own h1.
-function usePageTitle(): string {
+// Each route carries a handle: { title, subtitle }. The deepest match
+// names the page the header renders for, so pages don't repeat their
+// own h1; the subtitle sits under it as a one-line description.
+function usePageMeta(): { title: string; subtitle?: string } {
   const matches = useMatches()
   const last = matches[matches.length - 1]
-  const title = (last?.handle as { title?: string } | undefined)?.title
-  return title ?? 'Finance Analyzer'
+  const handle = (last?.handle as { title?: string; subtitle?: string } | undefined) ?? {}
+  return { title: handle.title ?? 'Finance Analyzer', subtitle: handle.subtitle }
 }
 
 export function AppHeader() {
-  const title = usePageTitle()
+  const { title, subtitle } = usePageMeta()
   const { profile } = useProfile()
   const openTransactionForm = useUiStore((state) => state.openTransactionForm)
 
   return (
     <header className="app-header">
-      <h1 className="app-header__title">{title}</h1>
+      <div className="app-header__heading">
+        <h1 className="app-header__title">{title}</h1>
+        {subtitle && <p className="app-header__subtitle">{subtitle}</p>}
+      </div>
       <div className="app-header__actions">
         <PeriodSelector />
         <NotificationBell />
+        <Link to="/settings" className="app-header__profile" aria-label="Profile">
+          <ProfileBadge
+            hideName
+            displayName={profile.displayName}
+            avatarInitials={profile.avatarInitials}
+          />
+        </Link>
         <button
           type="button"
           className="button button--primary app-header__add"
@@ -35,9 +46,6 @@ export function AppHeader() {
           <Plus size={16} aria-hidden="true" />
           Add transaction
         </button>
-        <Link to="/settings" className="app-header__profile" aria-label="Profile">
-          <ProfileBadge displayName={profile.displayName} avatarInitials={profile.avatarInitials} />
-        </Link>
       </div>
     </header>
   )

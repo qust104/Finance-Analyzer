@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react'
+import { Calendar, ChevronDown } from 'lucide-react'
 import { getAvailableMonths } from '../../entities/transaction/model/filters'
 import { formatMonthKey } from '../../shared/lib/format'
 import { useTransactions } from '../../shared/hooks/useTransactions'
@@ -17,7 +17,8 @@ export function PeriodSelector() {
   const value = reportMonth ?? ''
 
   return (
-    <label className="period-selector">
+    <span className="period-selector">
+      <Calendar className="period-selector__calendar" size={16} aria-hidden="true" />
       <span className="sr-only">Report month</span>
       <select
         className="period-selector__select"
@@ -33,6 +34,6 @@ export function PeriodSelector() {
         ))}
       </select>
       <ChevronDown className="period-selector__chevron" size={14} aria-hidden="true" />
-    </label>
+    </span>
   )
 }

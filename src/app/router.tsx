@@ -17,7 +17,10 @@ export const router = createBrowserRouter(
         { index: true, element: <Navigate to="/dashboard" replace /> },
         {
           path: 'dashboard',
-          handle: { title: 'Dashboard' },
+          handle: {
+            title: 'Dashboard',
+            subtitle: 'Your financial overview for August 2026',
+          },
           lazy: () =>
             import('../pages/Dashboard/DashboardPage').then((m) => ({
               Component: m.DashboardPage,
@@ -26,7 +29,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'transactions',
-          handle: { title: 'Transactions' },
+          handle: {
+            title: 'Transactions',
+            subtitle: 'Every transaction across your accounts',
+          },
           lazy: () =>
             import('../pages/Transactions/TransactionsPage').then((m) => ({
               Component: m.TransactionsPage,
@@ -35,7 +41,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'analytics',
-          handle: { title: 'Analytics' },
+          handle: {
+            title: 'Analytics',
+            subtitle: 'Spending habits and trends across months',
+          },
           lazy: () =>
             import('../pages/Analytics/AnalyticsPage').then((m) => ({
               Component: m.AnalyticsPage,
@@ -44,7 +53,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'budgets',
-          handle: { title: 'Budgets' },
+          handle: {
+            title: 'Budgets',
+            subtitle: 'Plan your spending by category',
+          },
           lazy: () =>
             import('../pages/Budgets/BudgetsPage').then((m) => ({
               Component: m.BudgetsPage,
@@ -53,7 +65,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'categories',
-          handle: { title: 'Categories' },
+          handle: {
+            title: 'Categories',
+            subtitle: 'Your personal spending categories',
+          },
           lazy: () =>
             import('../pages/Categories/CategoriesPage').then((m) => ({
               Component: m.CategoriesPage,
@@ -62,7 +77,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'recurring',
-          handle: { title: 'Recurring' },
+          handle: {
+            title: 'Recurring',
+            subtitle: 'Bills and subscriptions on autopilot',
+          },
           lazy: () =>
             import('../pages/Recurring/RecurringPage').then((m) => ({
               Component: m.RecurringPage,
@@ -71,7 +89,10 @@ export const router = createBrowserRouter(
         },
         {
           path: 'settings',
-          handle: { title: 'Settings' },
+          handle: {
+            title: 'Settings',
+            subtitle: 'Profile, theme, data backup',
+          },
           lazy: () =>
             import('../pages/Settings/SettingsPage').then((m) => ({
               Component: m.SettingsPage,

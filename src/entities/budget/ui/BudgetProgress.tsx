@@ -1,3 +1,4 @@
+import { Car, Gamepad2, Home, UtensilsCrossed, type LucideIcon } from 'lucide-react'
 import type { BudgetUsage } from '../../../analytics/budgets'
 import { categoryColorOf, categoryLabelOf } from '../../category/model/catalog'
 import type { CategoryDef } from '../../category/model/types'
@@ -12,19 +13,42 @@ interface BudgetProgressProps {
   onDelete?: (id: string) => void
 }
 
+// Branded category glyphs: a small icon in a tinted square per category
+// group; groups without a glyph fall back to the category color dot.
+const CATEGORY_GLYPHS: Record<string, { icon: LucideIcon; tone: string }> = {
+  housing: { icon: Home, tone: 'blue' },
+  food: { icon: UtensilsCrossed, tone: 'orange' },
+  transport: { icon: Car, tone: 'cyan' },
+  entertainment: { icon: Gamepad2, tone: 'pink' },
+}
+
 export function BudgetProgress({ usage, categories, onEdit, onDelete }: BudgetProgressProps) {
   const { budget, spent, usagePercent, remaining, exceeded } = usage
   const barWidth = usagePercent > 100 ? 100 : usagePercent
-  const stateClass = exceeded ? '--exceeded' : usagePercent > 90 ? '--warning' : '--ok'
+  // Bar color follows usage: green while comfortably under, orange
+  // approaching the ceiling, red at or beyond it.
+  const stateClass =
+    usagePercent > 95 ? '--exceeded' : usagePercent >= 75 ? '--warning' : '--ok'
+  const glyph = CATEGORY_GLYPHS[budget.category]
+  const GlyphIcon = glyph?.icon
 
   return (
     <article className="budget-progress">
       <div className="budget-progress__header">
         <span className="budget-progress__category">
-          <span
-            className="budget-progress__dot"
-            style={{ background: categoryColorOf(categories, budget.category) }}
-          />
+          {GlyphIcon ? (
+            <span
+              className={`budget-progress__glyph budget-progress__glyph--${glyph.tone}`}
+              aria-hidden="true"
+            >
+              <GlyphIcon size={16} />
+            </span>
+          ) : (
+            <span
+              className="budget-progress__dot"
+              style={{ background: categoryColorOf(categories, budget.category) }}
+            />
+          )}
           {categoryLabelOf(categories, budget.category)}
         </span>
         <span className="budget-progress__percent">{usagePercent.toFixed(1)}%</span>

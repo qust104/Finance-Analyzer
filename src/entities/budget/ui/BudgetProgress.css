@@ -20,7 +20,38 @@
   font-weight: 600;
 }
 
+.budget-progress__glyph {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.budget-progress__glyph--blue {
+  background: var(--badge-blue-bg);
+  color: var(--badge-blue-fg);
+}
+
+.budget-progress__glyph--orange {
+  background: var(--badge-orange-bg);
+  color: var(--badge-orange-fg);
+}
+
+.budget-progress__glyph--cyan {
+  background: var(--badge-cyan-bg);
+  color: var(--badge-cyan-fg);
+}
+
+.budget-progress__glyph--pink {
+  background: var(--badge-pink-bg);
+  color: var(--badge-pink-fg);
+}
+
 .budget-progress__dot {
+  flex: none;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -45,7 +76,7 @@
 }
 
 .budget-progress__bar--ok {
-  background: var(--accent);
+  background: var(--income);
 }
 
 .budget-progress__bar--warning {
