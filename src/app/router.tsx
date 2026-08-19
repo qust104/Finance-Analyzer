@@ -17,6 +17,7 @@ export const router = createBrowserRouter(
         { index: true, element: <Navigate to="/dashboard" replace /> },
         {
           path: 'dashboard',
+          handle: { title: 'Dashboard' },
           lazy: () =>
             import('../pages/Dashboard/DashboardPage').then((m) => ({
               Component: m.DashboardPage,
@@ -25,6 +26,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'transactions',
+          handle: { title: 'Transactions' },
           lazy: () =>
             import('../pages/Transactions/TransactionsPage').then((m) => ({
               Component: m.TransactionsPage,
@@ -33,6 +35,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'analytics',
+          handle: { title: 'Analytics' },
           lazy: () =>
             import('../pages/Analytics/AnalyticsPage').then((m) => ({
               Component: m.AnalyticsPage,
@@ -41,6 +44,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'budgets',
+          handle: { title: 'Budgets' },
           lazy: () =>
             import('../pages/Budgets/BudgetsPage').then((m) => ({
               Component: m.BudgetsPage,
@@ -49,6 +53,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'categories',
+          handle: { title: 'Categories' },
           lazy: () =>
             import('../pages/Categories/CategoriesPage').then((m) => ({
               Component: m.CategoriesPage,
@@ -57,6 +62,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'recurring',
+          handle: { title: 'Recurring' },
           lazy: () =>
             import('../pages/Recurring/RecurringPage').then((m) => ({
               Component: m.RecurringPage,
@@ -65,6 +71,7 @@ export const router = createBrowserRouter(
         },
         {
           path: 'settings',
+          handle: { title: 'Settings' },
           lazy: () =>
             import('../pages/Settings/SettingsPage').then((m) => ({
               Component: m.SettingsPage,

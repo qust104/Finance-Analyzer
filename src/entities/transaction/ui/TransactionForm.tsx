@@ -5,6 +5,7 @@ import type { TransactionInput } from '../model/repository'
 import { transactionSchema } from '../model/transactionSchema'
 import type { TransactionFormValues } from '../model/transactionSchema'
 import type { CategoryDef } from '../../category/model/types'
+import { ACCOUNT_SUGGESTIONS } from '../model/types'
 import type { Category, Transaction } from '../model/types'
 import './TransactionForm.css'
 import '../../../shared/ui/form.css'
@@ -37,16 +38,19 @@ export function TransactionForm({
       amount: initialValue ? String(initialValue.amount) : '',
       description: initialValue?.description ?? '',
       category: initialValue?.category ?? '',
+      account: initialValue?.account ?? ACCOUNT_SUGGESTIONS[0],
       date: initialValue?.date ?? '',
     },
   })
 
   const submit: SubmitHandler<TransactionFormValues> = (values) => {
+    const account = (values.account ?? '').trim()
     onSubmit({
       type: values.type,
       amount: Number(values.amount),
       description: values.description.trim(),
       category: values.category as Category,
+      account: account === '' ? ACCOUNT_SUGGESTIONS[0] : account,
       date: values.date,
     })
   }
@@ -124,6 +128,31 @@ export function TransactionForm({
         {errors.category && (
           <p id="transaction-category-error" className="form-field__error">
             {errors.category.message}
+          </p>
+        )}
+      </div>
+
+      <div className="form-field">
+        <label className="form-field__label" htmlFor="transaction-account">
+          Account
+        </label>
+        <input
+          id="transaction-account"
+          className="form-field__control"
+          type="text"
+          list="transaction-account-suggestions"
+          {...register('account')}
+          aria-invalid={errors.account ? true : undefined}
+          aria-describedby={errors.account ? 'transaction-account-error' : undefined}
+        />
+        <datalist id="transaction-account-suggestions">
+          {ACCOUNT_SUGGESTIONS.map((account) => (
+            <option key={account} value={account} />
+          ))}
+        </datalist>
+        {errors.account && (
+          <p id="transaction-account-error" className="form-field__error">
+            {errors.account.message}
           </p>
         )}
       </div>

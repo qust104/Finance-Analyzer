@@ -5,6 +5,7 @@ import type { CategoryDef } from '../../entities/category/model/types'
 import { isRecurring } from '../../entities/recurring/model/recurringStorage'
 import type { RecurringDef } from '../../entities/recurring/model/types'
 import { isTransaction } from '../../entities/transaction/model/transactionStorage'
+import { DEFAULT_ACCOUNT } from '../../entities/transaction/model/types'
 import type { Transaction } from '../../entities/transaction/model/types'
 
 // The backup file format. `version` guards future migrations;
@@ -82,7 +83,11 @@ export function parseExportPayload(raw: unknown): ParseBackupResult {
     return { ok: false, error: 'Backup contains invalid recurring templates' }
   }
 
-  const transactions = candidate.transactions.filter(isTransaction)
+  const transactions = candidate.transactions
+    .filter(isTransaction)
+    // Backups written before accounts existed restore with the default
+    // account label instead of surfacing undefined.
+    .map((transaction) => ({ ...transaction, account: transaction.account ?? DEFAULT_ACCOUNT }))
   const budgets = candidate.budgets.filter(isBudget)
   if (transactions.length !== candidate.transactions.length) {
     return { ok: false, error: 'Backup contains invalid transaction rows' }

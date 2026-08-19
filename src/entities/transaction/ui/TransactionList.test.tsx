@@ -19,6 +19,7 @@ function makeTransaction(id: number): Transaction {
     amount: 100 + id,
     type: 'expense',
     category: 'food',
+    account: 'Checking Account',
   }
 }
 

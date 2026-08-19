@@ -20,6 +20,11 @@ interface UiState {
   budgetForm: FormTarget<Budget> | null
   openBudgetForm: (target: FormTarget<Budget>) => void
   closeBudgetForm: () => void
+
+  // Explicitly chosen report month ('YYYY-MM'); null means "auto" —
+  // the latest month present in the data decides every report.
+  reportMonth: string | null
+  setReportMonth: (month: string | null) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -34,4 +39,7 @@ export const useUiStore = create<UiState>((set) => ({
   budgetForm: null,
   openBudgetForm: (target) => set({ budgetForm: target }),
   closeBudgetForm: () => set({ budgetForm: null }),
+
+  reportMonth: null,
+  setReportMonth: (month) => set({ reportMonth: month }),
 }))

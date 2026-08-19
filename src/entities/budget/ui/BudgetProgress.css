@@ -1,7 +1,7 @@
 .budget-progress {
   background: var(--surface);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 

@@ -5,6 +5,10 @@
   box-shadow: var(--shadow-card);
 }
 
+.settings-card + .settings-card {
+  margin-top: 16px;
+}
+
 .settings-card__title {
   margin: 0 0 4px;
   font-size: 16px;
@@ -69,4 +73,44 @@
 
 .settings-message--success {
   color: var(--income);
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.settings-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.settings-field__input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.settings-field__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.settings-actions__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.settings-actions__row .settings-message {
+  margin: 0;
 }

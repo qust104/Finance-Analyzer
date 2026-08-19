@@ -107,6 +107,8 @@ test('recurring template posts the due transaction after a reload', async ({ pag
   await expect(page.getByText(/Next:/)).toBeVisible()
 
   await page.reload()
+  // The engine posts the due template on open and the layout reports it.
+  await expect(page.getByText(/Added 1 recurring transaction/)).toBeVisible()
   await page.getByRole('link', { name: 'Transactions' }).click()
   const table = page.locator('table')
   await expect(table.getByText('Netflix E2E')).toBeVisible()
@@ -210,8 +212,80 @@ test('keeps working offline after the first visit (PWA shell)', async ({ page, c
   await context.setOffline(false)
 })
 
+test('undoes a deleted recurring template with its schedule intact', async ({ page }) => {
+  await page.goto('/recurring')
+
+  await page.getByRole('button', { name: 'Add template' }).first().click()
+  const dialog = page.getByRole('dialog', { name: 'Add template' })
+  await dialog.locator('#recurring-description').fill('Netflix E2E')
+  await dialog.locator('#recurring-amount').fill('20000')
+  await dialog.locator('#recurring-category').selectOption('entertainment')
+  await dialog.locator('#recurring-interval').selectOption('monthly')
+  await dialog.locator('#recurring-start').fill(localDateString(1))
+  await dialog.getByRole('button', { name: 'Add template' }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.locator('.recurring-list').getByText('Netflix E2E')).toBeVisible()
+
+  await page.reload()
+  // The engine posts the due transaction and advances the template.
+  await expect(page.getByText(/Added 1 recurring transaction/)).toBeVisible()
+  await page.goto('/recurring')
+  await page.locator('.recurring-list__item').filter({ hasText: 'Netflix E2E' }).getByRole('button', { name: 'Delete' }).click()
+  await expect(page.locator('.recurring-list').getByText('Netflix E2E')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(page.locator('.recurring-list').getByText('Netflix E2E')).toBeVisible()
+
+  // The restored template keeps its lastPostedDate: a reload posts nothing.
+  await page.reload()
+  await expect(page.locator('.recurring-list').getByText('Netflix E2E')).toBeVisible()
+  await page.waitForTimeout(1000)
+  await expect(page.getByText(/Added 1 recurring transaction/)).toHaveCount(0)
+})
+
+test('virtualizes a large transaction list', async ({ page }) => {
+  await page.addInitScript(() => {
+    const rows = Array.from({ length: 2500 }, (_, i) => ({
+      id: `e2e-${i}`,
+      date: '2026-08-01',
+      amount: 100 + i,
+      type: i % 2 === 0 ? 'expense' : 'income',
+      category: 'other',
+      description: `Virtual row ${i}`,
+    }))
+    localStorage.setItem('finance-analyzer.transactions.v1', JSON.stringify(rows))
+  })
+  await page.goto('/transactions')
+
+  const rows = page.locator('tbody tr[data-transaction-id]')
+  await expect(page.getByRole('heading', { name: 'Transactions' })).toBeVisible()
+  await expect(rows.first()).toBeVisible()
+
+  // Only the visible window (plus overscan) is in the DOM.
+  const mounted = await rows.count()
+  expect(mounted).toBeLessThan(100)
+
+  // Scrolling far down mounts rows deep in the list and unmounts the top.
+  await page.evaluate(() => {
+    const viewport = document.querySelector('.transaction-table__window')
+    if (viewport) viewport.scrollTop = viewport.scrollHeight
+  })
+  await expect(page.locator('tbody').getByText('Virtual row 2499')).toBeVisible()
+  await expect(page.locator('tbody tr[data-transaction-id="e2e-0"]')).toHaveCount(0)
+
+  // The scrollbar still spans the whole list.
+  const scrollHeight = await page.evaluate(() => {
+    const viewport = document.querySelector('.transaction-table__window')
+    return viewport ? viewport.scrollHeight : 0
+  })
+  expect(scrollHeight).toBeGreaterThan(48 * 2499)
+})
+
 test('imports a CSV file dropped onto the page', async ({ page }) => {
   await page.goto('/transactions')
+  // The drop listeners attach to window when the (lazy) page mounts;
+  // dispatching while the loader is still up would silently no-op.
+  await expect(page.locator('table').first()).toBeVisible()
 
   const csv = 'date,description,amount,type,category\n2026-08-05,Dropped drone,700,expense,other'
   const dataTransfer = await page.evaluateHandle((text) => {

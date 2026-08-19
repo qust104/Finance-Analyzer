@@ -6,6 +6,33 @@
 
 .spending-by-category__chart {
   width: 100%;
+  position: relative;
+}
+
+.spending-by-category__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.spending-by-category__center-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.spending-by-category__center-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .spending-legend {

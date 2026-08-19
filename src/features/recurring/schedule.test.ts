@@ -85,6 +85,7 @@ describe('computeRecurringPlan', () => {
       type: 'expense' as const,
       category: 'housing',
       description: 'Rent',
+      account: 'Checking Account',
     },
   ]
 

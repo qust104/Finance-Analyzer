@@ -15,7 +15,20 @@ export interface Transaction {
   type: TransactionType
   category: Category
   description: string
+  account: string
 }
+
+// Accounts are plain text labels, not CRUD entities: the form suggests
+// common ones but any label is valid. Rows written before accounts
+// existed are migrated to this default on read.
+export const DEFAULT_ACCOUNT = 'Checking Account'
+
+export const ACCOUNT_SUGGESTIONS = [
+  'Checking Account',
+  'Cash',
+  'Credit Card',
+  'Savings',
+] as const
 
 export const TYPE_LABELS: Record<TransactionType, string> = {
   income: 'Income',

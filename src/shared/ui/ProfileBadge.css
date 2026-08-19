@@ -1,0 +1,46 @@
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.profile-badge__avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--avatar-bg, #4c5fd5);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+}
+
+.profile-badge__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-badge--compact .profile-badge__avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+.profile-badge--compact .profile-badge__name {
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .profile-badge__name {
+    display: none;
+  }
+}

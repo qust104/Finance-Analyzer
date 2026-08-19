@@ -1,6 +1,7 @@
 import { resolveCategoryKey } from '../../entities/category/model/catalog'
 import type { CategoryDef } from '../../entities/category/model/types'
 import type { TransactionInput } from '../../entities/transaction/model/repository'
+import { DEFAULT_ACCOUNT } from '../../entities/transaction/model/types'
 import type { Category, Transaction, TransactionType } from '../../entities/transaction/model/types'
 import { parseCsv } from './parseCsv'
 
@@ -97,7 +98,14 @@ export function normalizeCsvRow(
   }
   return {
     ok: true,
-    value: { date, amount, type, category, description: rawDescription },
+    value: {
+      date,
+      amount,
+      type,
+      category,
+      description: rawDescription,
+      account: DEFAULT_ACCOUNT,
+    },
   }
 }
 

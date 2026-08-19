@@ -171,6 +171,7 @@ describe('normalizeCsvRow', () => {
         amount: 150000,
         type: 'income',
         category: 'salary',
+        account: 'Checking Account',
       },
     })
   })
@@ -204,6 +205,7 @@ describe('normalizeCsvRow', () => {
         amount: 150000,
         type: 'income',
         category: 'salary',
+        account: 'Checking Account',
       },
     })
   })
@@ -226,6 +228,7 @@ describe('buildImportPreview', () => {
       type: 'income',
       category: 'salary',
       description: 'Salary',
+      account: 'Checking Account',
     },
   ]
 
@@ -292,6 +295,7 @@ describe('buildImportPreview', () => {
         type: 'expense',
         category: 'food',
         description: 'A',
+        account: 'Checking Account',
       },
       {
         id: '2',
@@ -300,6 +304,7 @@ describe('buildImportPreview', () => {
         type: 'expense',
         category: 'food',
         description: 'A',
+        account: 'Checking Account',
       },
     ]
 

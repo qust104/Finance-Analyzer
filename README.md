@@ -24,10 +24,11 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Feature | Details |
 | --- | --- |
 | 🧾 **Transactions** | CRUD, search, category / type / month filters, date range, amount range, URL-synced sort state |
+| 🚀 **Virtualized list** | Long lists are window-rendered (>1 500 rows) with fixed row heights and overscan — the DOM stays tiny no matter the list size |
 | 📥 **CSV import** | Hand-written state-machine parser, category aliases (`еда` → `food`), duplicate detection, size / row limits, drag & drop |
 | 🎯 **Budgets** | Per-category monthly limits with progress bars and warnings |
-| 🔁 **Recurring transactions** | Weekly / monthly / yearly templates auto-posted on app load, backfill and duplicate protection |
-| 🏷 **Custom categories** | User-defined categories with colors and aliases, built-in catalogue, CSV alias resolution |
+| 🔁 **Recurring transactions** | Weekly / monthly / yearly templates auto-posted on app load, backfill and duplicate protection; delete is undoable (template restored with its engine state), auto-posting reported via toast |
+| 🏷 **Custom categories** | User-defined categories with colors and aliases, built-in catalogue, CSV alias resolution; rows must reference an existing category (referential integrity on write) |
 | 📊 **Dashboard** | Cash flow and spending charts (Recharts), recent activity, budget overview |
 | 📈 **Analytics** | Monthly trend, category breakdown and month-over-month comparison |
 | 💡 **Insights** | Rule-based hints: overspending, high savings rate, budget warnings |
@@ -49,7 +50,7 @@ A full-featured SPA that tracks income and expenses: transaction CRUD with filte
 | Forms | React Hook Form + Zod schemas |
 | Charts | Recharts |
 | Mock backend | MSW (dev/tests) + inline local handler (production) |
-| Tests | Vitest + React Testing Library (223 tests) + Playwright (9 E2E scenarios) |
+| Tests | Vitest + React Testing Library (247 tests) + Playwright (11 E2E scenarios) |
 | Quality | ESLint + Prettier, strict TypeScript |
 
 ## 🚀 Getting Started
@@ -77,10 +78,10 @@ npm run preview    # serve the production build
 ## 🧪 Testing
 
 - **200+ unit tests** for domain logic, analytics, CSV parsing, validation and theming
-- **Integration tests** drive real user flows (add / edit / delete / import) against the MSW API
+- **Integration tests** drive real user flows (add / edit / delete / import / undo) against the MSW API
 - **Accessibility tests** verify focus management in the modal dialog
-- **Performance test** proves row memoization with a 2 000-row list (React Profiler)
-- **9 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting, backup export, dark mode, offline reload via the PWA shell, drag & drop CSV import
+- **Performance test** proves row memoization with a 2 000-row list (React Profiler); windowed rendering keeps the DOM under 100 rows for lists of 2 500
+- **11 Playwright E2E scenarios** run against a production build (`vite preview`): navigation, transaction → dashboard → budget flow, custom categories, recurring auto-posting + undo, backup export, dark mode, offline reload via the PWA shell, drag & drop CSV import, windowing in a 2 500-row list
 
 ```bash
 npm run test
@@ -110,7 +111,7 @@ src/
 └── shared/
     ├── hooks/            # data hooks (useTransactions, useBudgets, useTheme)
     ├── command-palette/  # Ctrl/Cmd+K quick search (index + store + UI)
-    ├── lib/              # formatting, monitoring, category colors
+    ├── lib/              # formatting, monitoring, virtual window math, category colors
     ├── store/            # Zustand UI store
     └── ui/               # Modal, AsyncStates, ErrorBoundary, ThemeToggle
 e2e/                      # Playwright scenarios (production build)

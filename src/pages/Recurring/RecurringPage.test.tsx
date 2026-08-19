@@ -98,6 +98,34 @@ describe('recurring page', () => {
     await waitFor(() => expect(screen.queryByText('Netflix')).not.toBeInTheDocument())
   })
 
+  it('restores the exact template including lastPostedDate on undo', async () => {
+    const user = userEvent.setup()
+    const api = await import('../../api/recurring')
+    const created = await api.createRecurring({
+      description: 'Netflix',
+      amount: 799,
+      type: 'expense',
+      category: 'entertainment',
+      interval: 'monthly',
+      startDate: '2026-08-01',
+      endDate: null,
+      active: true,
+    })
+    await api.applyRecurring()
+    const posted = await api.getRecurring()
+    expect(posted[0].lastPostedDate).not.toBeNull()
+
+    await renderPage()
+    await user.click(screen.getAllByRole('button', { name: 'Delete' })[0])
+    await waitFor(() => expect(screen.queryByText('Netflix')).not.toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+
+    await waitFor(() => expect(screen.getByText('Netflix')).toBeInTheDocument())
+    const restored = (await api.getRecurring())[0]
+    expect(restored.id).toBe(created.id)
+    expect(restored.lastPostedDate).toBe(posted[0].lastPostedDate)
+  })
+
   it('shows the pause badge for inactive templates', async () => {
     const api = await import('../../api/recurring')
     await api.createRecurring({

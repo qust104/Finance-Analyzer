@@ -1,3 +1,4 @@
+import { DEFAULT_ACCOUNT } from './types'
 import type { Transaction } from './types'
 
 const STORAGE_KEY = 'finance-analyzer.transactions'
@@ -21,8 +22,25 @@ export function isTransaction(value: unknown): value is Transaction {
     (candidate.type === 'income' || candidate.type === 'expense') &&
     typeof candidate.category === 'string' &&
     candidate.category.length > 0 &&
-    typeof candidate.description === 'string'
+    typeof candidate.description === 'string' &&
+    (candidate.account === undefined || typeof candidate.account === 'string')
   )
+}
+
+// Rows written before accounts existed pass isTransaction (account is
+// optional there) but must surface with a usable label: brand the
+// default account in. Returns the migrated list, or null when nothing
+// changed so callers can skip persisting.
+function withDefaultAccount(rows: Transaction[]): { rows: Transaction[]; changed: boolean } {
+  let changed = false
+  const migrated = rows.map((row) => {
+    if (typeof row.account === 'string' && row.account.length > 0) {
+      return row
+    }
+    changed = true
+    return { ...row, account: DEFAULT_ACCOUNT }
+  })
+  return { rows: migrated, changed }
 }
 
 // localStorage is an untrusted source: parsing, validation and a safe
@@ -55,7 +73,11 @@ export function readTransactions(): Transaction[] | null {
   if (valid.length !== parsed.length) {
     writeTransactions(valid)
   }
-  return valid
+  const { rows, changed } = withDefaultAccount(valid)
+  if (changed) {
+    writeTransactions(rows)
+  }
+  return rows
 }
 
 export function writeTransactions(transactions: Transaction[]): void {

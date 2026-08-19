@@ -39,7 +39,6 @@ export function BudgetsPage() {
   if (isPending) {
     return (
       <section>
-        <h1 className="page-title">Budgets</h1>
         <LoadingState />
       </section>
     )
@@ -48,7 +47,6 @@ export function BudgetsPage() {
   if (isError && budgets.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Budgets</h1>
         <ErrorState onRetry={refetch} />
       </section>
     )
@@ -75,7 +73,6 @@ export function BudgetsPage() {
   return (
     <section>
       <div className="budgets-header">
-        <h1 className="page-title">Budgets</h1>
         <button
           type="button"
           className="button button--primary"

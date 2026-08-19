@@ -18,6 +18,7 @@ const transactions: Transaction[] = [
     type: 'income',
     category: 'salary',
     description: 'Salary',
+    account: 'Checking Account',
   },
 ]
 

@@ -13,17 +13,20 @@ interface BudgetOverviewProps {
   transactions: readonly Transaction[]
   budgets: readonly Budget[]
   categories: readonly CategoryDef[]
+  month?: string
 }
 
 export const BudgetOverview = memo(function BudgetOverview({
   transactions,
   budgets,
   categories,
+  month,
 }: BudgetOverviewProps) {
-  const { month, isFallback } = useReportMonth(transactions)
+  const resolved = useReportMonth(transactions)
+  const reportMonth = month ?? resolved.month
   const usages = useMemo(
-    () => calculateBudgetUsage(transactions, budgets, month),
-    [transactions, budgets, month],
+    () => calculateBudgetUsage(transactions, budgets, reportMonth),
+    [transactions, budgets, reportMonth],
   )
 
   return (
@@ -35,7 +38,7 @@ export const BudgetOverview = memo(function BudgetOverview({
         </Link>
       </div>
 
-      {isFallback && <ReportMonthBanner month={month} />}
+      {month === undefined && resolved.isFallback && <ReportMonthBanner month={reportMonth} />}
 
       {usages.length === 0 ? (
         <p className="budget-overview__empty">

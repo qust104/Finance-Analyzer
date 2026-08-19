@@ -15,6 +15,7 @@ const baseTransaction: Transaction = {
   category: 'food',
   amount: 1200,
   date: '2026-08-10',
+  account: 'Checking Account',
 }
 
 describe('parseFilters / serializeFilters', () => {

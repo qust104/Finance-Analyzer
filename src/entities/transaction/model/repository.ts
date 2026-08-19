@@ -8,6 +8,7 @@ export interface TransactionInput {
   type: TransactionType
   category: Category
   description: string
+  account: string
 }
 
 export interface TransactionRepository {

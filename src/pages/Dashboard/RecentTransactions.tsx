@@ -35,6 +35,7 @@ export const RecentTransactions = memo(function RecentTransactions({
             <span className="recent-transactions__category">
               {categoryLabelOf(categories, transaction.category)}
             </span>
+            <span className="recent-transactions__account">{transaction.account}</span>
             <span className="recent-transactions__date">{formatDate(transaction.date)}</span>
             <span
               className={`recent-transactions__amount recent-transactions__amount--${transaction.type}`}

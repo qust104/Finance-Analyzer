@@ -21,6 +21,7 @@ const transaction = (date: string): Transaction => ({
   type: 'expense',
   category: 'food',
   description: 'Groceries',
+  account: 'Checking Account',
 })
 
 beforeEach(() => {

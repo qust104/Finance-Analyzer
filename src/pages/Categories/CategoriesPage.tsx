@@ -68,7 +68,6 @@ export function CategoriesPage() {
   if (isPending) {
     return (
       <section>
-        <h1 className="page-title">Categories</h1>
         <LoadingState />
       </section>
     )
@@ -77,7 +76,6 @@ export function CategoriesPage() {
   if (isError && categories.length === 0) {
     return (
       <section>
-        <h1 className="page-title">Categories</h1>
         <ErrorState onRetry={refetch} />
       </section>
     )
@@ -86,7 +84,6 @@ export function CategoriesPage() {
   return (
     <section>
       <div className="categories-header">
-        <h1 className="page-title">Categories</h1>
         <button type="button" className="button button--primary" onClick={openCreate}>
           Add category
         </button>

@@ -16,14 +16,18 @@ Personal finance SPA: React 19 + TypeScript + Vite 8 (Rolldown). No real backend
 ## Structure
 
 - `src/entities/{transaction,budget}/model` — domain: types, zod schemas, localStorage storage, repositories
-- `src/api/` — fetch layer; `ApiError` thrown on non-2xx and network failure
+- `src/api/` — fetch layer; `ApiError` thrown on non-2xx and network failure. Recurring undo goes through `POST /api/recurring/:id/restore` (full template body, validated with `isRecurring`)
+- `src/api/local.ts` — the inline "server": referential integrity (`categoryExists` = built-ins + custom) checked in the 4 transaction/recurring write handlers; category deletion is blocked (409) when used by transactions, budgets **or recurring templates**
+- `src/app/layouts/` — AppLayout + `useRecurringMaintenance` (engine run on open; outcome/error surfaced via toast in the layout)
 - `src/mocks/` — MSW handlers = the "backend"; module-scoped repositories (handlers are created once per module load — reset modules in tests with `vi.resetModules()`)
 - `src/shared/hooks/` — TanStack Query hooks (stable callbacks via `useCallback` — rows memoize on them)
 - `src/shared/lib/monitoring.ts` — error reporting core (reporters + window listeners)
-- `src/shared/ui/` — Modal (focus trap), ErrorBoundary, AsyncStates, PageContainer
+- `src/shared/lib/virtualWindow.ts` — windowed rendering math for long lists (pure `computeVirtualRange`); TransactionList virtualizes above 1 500 rows with fixed 48px rows (`table-layout: fixed`, ellipsis), activated only when the viewport is actually measurable (jsdom clientHeight 0 → full render, tests unaffected)
+- `src/shared/ui/` — Modal (focus trap), ErrorBoundary, AsyncStates, PageContainer, Toast (status/alert variant, undo action, auto-dismiss)
 - `src/pages/*` — lazy-loaded routes (`src/app/router.tsx`)
 - `e2e/` + `playwright.config.ts` — Playwright E2E (chromium only), config lives in `tsconfig.node.json` scope
 - `src/data/seed.ts` — 30 demo transactions seeded on first run (empty localStorage); E2E asserts against the seeded data
+- `CONTRIBUTING.md` — checklist of defensive properties every new CRUD entity must inherit (undo with exact-state restore, surfaced mutation errors, referential integrity)
 
 ## Conventions
 

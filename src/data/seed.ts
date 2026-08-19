@@ -8,6 +8,7 @@ export const seedTransactions: Transaction[] = [
     type: 'income',
     category: 'salary',
     description: 'Salary',
+    account: 'Checking Account',
   },
   {
     id: '2',
@@ -16,6 +17,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Pyaterochka',
+    account: 'Cash',
   },
   {
     id: '3',
@@ -24,6 +26,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
+    account: 'Cash',
   },
   {
     id: '4',
@@ -32,6 +35,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Rent',
+    account: 'Checking Account',
   },
   {
     id: '5',
@@ -40,6 +44,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Wildberries',
+    account: 'Credit Card',
   },
   {
     id: '6',
@@ -48,6 +53,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Cinema',
+    account: 'Cash',
   },
   {
     id: '7',
@@ -56,6 +62,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'health',
     description: 'Pharmacy',
+    account: 'Cash',
   },
   {
     id: '8',
@@ -64,6 +71,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Magnit',
+    account: 'Cash',
   },
   {
     id: '9',
@@ -72,6 +80,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Metro card',
+    account: 'Cash',
   },
   {
     id: '10',
@@ -80,6 +89,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Ozon',
+    account: 'Credit Card',
   },
   {
     id: '11',
@@ -88,6 +98,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'PlayStation Store',
+    account: 'Credit Card',
   },
   {
     id: '12',
@@ -96,6 +107,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Coffee shop',
+    account: 'Cash',
   },
   {
     id: '13',
@@ -104,6 +116,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
+    account: 'Cash',
   },
   {
     id: '14',
@@ -112,6 +125,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'other',
     description: 'Mobile top-up',
+    account: 'Checking Account',
   },
   {
     id: '15',
@@ -120,6 +134,7 @@ export const seedTransactions: Transaction[] = [
     type: 'income',
     category: 'salary',
     description: 'Salary',
+    account: 'Checking Account',
   },
   {
     id: '16',
@@ -128,6 +143,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Utilities',
+    account: 'Checking Account',
   },
   {
     id: '17',
@@ -136,6 +152,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Pyaterochka',
+    account: 'Cash',
   },
   {
     id: '18',
@@ -144,6 +161,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'VkusVill',
+    account: 'Cash',
   },
   {
     id: '19',
@@ -152,6 +170,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Metro card',
+    account: 'Cash',
   },
   {
     id: '20',
@@ -160,6 +179,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Wildberries',
+    account: 'Credit Card',
   },
   {
     id: '21',
@@ -168,6 +188,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Magnit',
+    account: 'Cash',
   },
   {
     id: '22',
@@ -176,6 +197,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Steam',
+    account: 'Credit Card',
   },
   {
     id: '23',
@@ -184,6 +206,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Rent',
+    account: 'Checking Account',
   },
   {
     id: '24',
@@ -192,6 +215,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
+    account: 'Cash',
   },
   {
     id: '25',
@@ -200,6 +224,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Delivery',
+    account: 'Cash',
   },
   {
     id: '26',
@@ -208,6 +233,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Kinopoisk + concerts',
+    account: 'Credit Card',
   },
   {
     id: '27',
@@ -216,6 +242,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Clothes',
+    account: 'Credit Card',
   },
   {
     id: '28',
@@ -224,6 +251,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'health',
     description: 'Dentist',
+    account: 'Checking Account',
   },
   {
     id: '29',
@@ -232,6 +260,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Coffee shop',
+    account: 'Cash',
   },
   {
     id: '30',
@@ -240,5 +269,6 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'other',
     description: 'Subscriptions',
+    account: 'Credit Card',
   },
 ]

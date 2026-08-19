@@ -10,6 +10,7 @@ import './FinancialInsights.css'
 interface FinancialInsightsProps {
   transactions: readonly Transaction[]
   budgets: readonly Budget[]
+  month?: string
 }
 
 const INSIGHT_ICONS: Record<Insight['type'], string> = {
@@ -21,17 +22,19 @@ const INSIGHT_ICONS: Record<Insight['type'], string> = {
 export const FinancialInsights = memo(function FinancialInsights({
   transactions,
   budgets,
+  month,
 }: FinancialInsightsProps) {
-  const { month, isFallback } = useReportMonth(transactions)
+  const resolved = useReportMonth(transactions)
+  const reportMonth = month ?? resolved.month
   const insights = useMemo(
-    () => generateInsights(transactions, budgets, month),
-    [transactions, budgets, month],
+    () => generateInsights(transactions, budgets, reportMonth),
+    [transactions, budgets, reportMonth],
   )
 
   return (
     <div className="dashboard-card">
       <h2 className="dashboard-card__title">Financial Insights</h2>
-      {isFallback && <ReportMonthBanner month={month} />}
+      {month === undefined && resolved.isFallback && <ReportMonthBanner month={reportMonth} />}
       {insights.length === 0 ? (
         <p className="insights-empty">All quiet — nothing needs your attention right now.</p>
       ) : (
