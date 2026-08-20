@@ -1,6 +1,137 @@
 import type { Transaction } from '../entities/transaction/model/types'
 
-export const seedTransactions: Transaction[] = [
+function hashString(input: string): number {
+  let hash = 2166136261
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function random01(seed: string): number {
+  let t = hashString(seed) + 0x6d2b79f5
+  t = Math.imul(t ^ (t >>> 15), t | 1)
+  t = t ^ (t + Math.imul(t ^ (t >>> 7), t | 61))
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
+
+function between(seed: string, min: number, max: number): number {
+  return Math.round(min + random01(seed) * (max - min))
+}
+
+const CHECKING = 'Checking Account'
+const CASH = 'Cash'
+const CREDIT = 'Credit Card'
+
+interface DemoSpec {
+  description: string
+  category: string
+  type: 'income' | 'expense'
+  range: [number, number]
+  days: number[]
+  account: string
+}
+
+const DEMO_MONTHS = [
+  '2025-12',
+  '2026-01',
+  '2026-02',
+  '2026-03',
+  '2026-04',
+  '2026-05',
+  '2026-06',
+]
+
+const SEASONAL_FACTOR: Record<string, number> = {
+  '2025-12': 1.6,
+  '2026-01': 0.8,
+  '2026-06': 1.25,
+}
+
+const MONTHLY_SPECS: DemoSpec[] = [
+  { description: 'Salary', category: 'salary', type: 'income', range: [150000, 150000], days: [1], account: CHECKING },
+  { description: 'Rent', category: 'housing', type: 'expense', range: [8990, 8990], days: [2], account: CHECKING },
+  { description: 'Utilities', category: 'housing', type: 'expense', range: [3800, 5600], days: [7], account: CHECKING },
+  { description: 'Subscriptions', category: 'other', type: 'expense', range: [300, 900], days: [5], account: CREDIT },
+  { description: 'Pyaterochka', category: 'food', type: 'expense', range: [1400, 2800], days: [3, 16], account: CASH },
+  { description: 'Magnit', category: 'food', type: 'expense', range: [1800, 3000], days: [8], account: CASH },
+  { description: 'Delivery', category: 'food', type: 'expense', range: [1700, 3300], days: [17], account: CASH },
+  { description: 'Coffee shop', category: 'food', type: 'expense', range: [350, 800], days: [15], account: CASH },
+  { description: 'Metro card', category: 'transport', type: 'expense', range: [420, 580], days: [13], account: CASH },
+  { description: 'Yandex Taxi', category: 'transport', type: 'expense', range: [550, 1350], days: [11], account: CASH },
+  { description: 'Wildberries', category: 'shopping', type: 'expense', range: [2400, 7000], days: [9], account: CREDIT },
+  { description: 'Ozon', category: 'shopping', type: 'expense', range: [2000, 6400], days: [18], account: CREDIT },
+  { description: 'Clothes', category: 'shopping', type: 'expense', range: [2500, 8000], days: [24], account: CREDIT },
+  { description: 'Steam', category: 'entertainment', type: 'expense', range: [700, 3200], days: [6], account: CREDIT },
+  { description: 'Cinema', category: 'entertainment', type: 'expense', range: [900, 2000], days: [19], account: CASH },
+  { description: 'Pharmacy', category: 'health', type: 'expense', range: [900, 3200], days: [10], account: CASH },
+]
+
+const SEASONAL_EVENTS: Record<string, Transaction[]> = {
+  '2025-12': [
+    { id: 's-202512-bonus', date: '2025-12-24', amount: 150000, type: 'income', category: 'salary', description: 'Year-end bonus', account: CHECKING },
+    { id: 's-202512-ny', date: '2025-12-29', amount: 9000, type: 'expense', category: 'entertainment', description: 'New Year dinner', account: CREDIT },
+  ],
+  '2026-04': [
+    { id: 's-202604-insurance', date: '2026-04-09', amount: 24000, type: 'expense', category: 'housing', description: 'Car insurance', account: CHECKING },
+  ],
+  '2026-06': [
+    { id: 's-202606-flights', date: '2026-06-11', amount: 32000, type: 'expense', category: 'transport', description: 'Flights to Mallorca', account: CREDIT },
+    { id: 's-202606-stay', date: '2026-06-18', amount: 46000, type: 'expense', category: 'housing', description: 'Vacation stay', account: CREDIT },
+  ],
+}
+
+const PENTAL_MONTHS = new Set(['2026-04'])
+
+function buildDemoMonth(month: string, index: number): Transaction[] {
+  const factor = SEASONAL_FACTOR[month] ?? 1
+  const rows: Transaction[] = []
+
+  for (const spec of MONTHLY_SPECS) {
+    if (spec.category === 'health' && index % 2 !== 0) {
+      continue
+    }
+    for (const day of spec.days) {
+      const seed = `${month}-${spec.description}-${day}`
+      const scaled =
+        spec.type === 'expense' &&
+        (spec.category === 'food' ||
+          spec.category === 'shopping' ||
+          spec.category === 'entertainment')
+          ? between(seed, ...spec.range) * factor
+          : between(seed, ...spec.range)
+      rows.push({
+        id: `s-${month.replace('-', '')}-${rows.length + 1}`,
+        date: `${month}-${String(day).padStart(2, '0')}`,
+        amount: Math.round(scaled),
+        type: spec.type,
+        category: spec.category,
+        description: spec.description,
+        account: spec.account,
+      })
+    }
+  }
+
+  if (PENTAL_MONTHS.has(month)) {
+    const seed = `${month}-Dentist`
+    rows.push({
+      id: `s-${month.replace('-', '')}-${rows.length + 1}`,
+      date: `${month}-22`,
+      amount: between(seed, 3000, 5200),
+      type: 'expense',
+      category: 'health',
+      description: 'Dentist',
+      account: CHECKING,
+    })
+  }
+
+  return [...rows, ...(SEASONAL_EVENTS[month] ?? [])]
+}
+
+const demoHistory: Transaction[] = DEMO_MONTHS.flatMap(buildDemoMonth)
+
+const CURRENT_MONTHS: Transaction[] = [
   {
     id: '1',
     date: '2026-07-01',
@@ -8,7 +139,7 @@ export const seedTransactions: Transaction[] = [
     type: 'income',
     category: 'salary',
     description: 'Salary',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '2',
@@ -17,7 +148,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Pyaterochka',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '3',
@@ -26,7 +157,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '4',
@@ -35,7 +166,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Rent',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '5',
@@ -44,7 +175,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Wildberries',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '6',
@@ -53,7 +184,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Cinema',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '7',
@@ -62,7 +193,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'health',
     description: 'Pharmacy',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '8',
@@ -71,7 +202,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Magnit',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '9',
@@ -80,7 +211,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Metro card',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '10',
@@ -89,7 +220,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Ozon',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '11',
@@ -98,7 +229,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'PlayStation Store',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '12',
@@ -107,7 +238,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Coffee shop',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '13',
@@ -116,7 +247,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '14',
@@ -125,7 +256,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'other',
     description: 'Mobile top-up',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '15',
@@ -134,7 +265,7 @@ export const seedTransactions: Transaction[] = [
     type: 'income',
     category: 'salary',
     description: 'Salary',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '16',
@@ -143,7 +274,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Utilities',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '17',
@@ -152,7 +283,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Pyaterochka',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '18',
@@ -161,7 +292,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'VkusVill',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '19',
@@ -170,7 +301,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Metro card',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '20',
@@ -179,7 +310,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Wildberries',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '21',
@@ -188,7 +319,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Magnit',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '22',
@@ -197,7 +328,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Steam',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '23',
@@ -206,7 +337,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'housing',
     description: 'Rent',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '24',
@@ -215,7 +346,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'transport',
     description: 'Yandex Taxi',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '25',
@@ -224,7 +355,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Delivery',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '26',
@@ -233,7 +364,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'entertainment',
     description: 'Kinopoisk + concerts',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '27',
@@ -242,7 +373,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'shopping',
     description: 'Clothes',
-    account: 'Credit Card',
+    account: CREDIT,
   },
   {
     id: '28',
@@ -251,7 +382,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'health',
     description: 'Dentist',
-    account: 'Checking Account',
+    account: CHECKING,
   },
   {
     id: '29',
@@ -260,7 +391,7 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'food',
     description: 'Coffee shop',
-    account: 'Cash',
+    account: CASH,
   },
   {
     id: '30',
@@ -269,6 +400,24 @@ export const seedTransactions: Transaction[] = [
     type: 'expense',
     category: 'other',
     description: 'Subscriptions',
-    account: 'Credit Card',
+    account: CREDIT,
   },
 ]
+
+export const seedTransactions: Transaction[] = [...demoHistory, ...CURRENT_MONTHS]
+
+export function isLegacySeed(rows: readonly Transaction[]): boolean {
+  return (
+    rows.length === CURRENT_MONTHS.length &&
+    rows.every((row, index) => {
+      const legacy = CURRENT_MONTHS[index]
+      return (
+        row.id === legacy.id &&
+        row.date === legacy.date &&
+        row.amount === legacy.amount &&
+        row.category === legacy.category &&
+        row.description === legacy.description
+      )
+    })
+  )
+}
