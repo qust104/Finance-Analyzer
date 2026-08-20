@@ -253,7 +253,7 @@ test('virtualizes a large transaction list', async ({ page }) => {
       category: 'other',
       description: `Virtual row ${i}`,
     }))
-    localStorage.setItem('finance-analyzer.transactions.v1', JSON.stringify(rows))
+    localStorage.setItem('finance-analyzer.transactions.v2', JSON.stringify(rows))
   })
   await page.goto('/transactions')
 

@@ -63,7 +63,7 @@ describe('analytics page', () => {
 
   it('shows an empty state when there are no transactions', async () => {
     server.close()
-    localStorage.setItem('finance-analyzer.transactions.v1', '[]')
+    localStorage.setItem('finance-analyzer.transactions.v2', '[]')
     vi.resetModules()
     const { handlers } = await import('../../mocks/handlers')
     server = setupServer(...handlers)
