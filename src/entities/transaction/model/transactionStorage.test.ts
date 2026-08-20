@@ -9,7 +9,7 @@ afterEach(() => localStorage.clear())
 describe('transactionStorage migration', () => {
   it('brands legacy rows without an account with the default account', () => {
     localStorage.setItem(
-      'finance-analyzer.transactions.v1',
+      'finance-analyzer.transactions.v2',
       JSON.stringify([
         {
           id: 'legacy-1',
@@ -28,7 +28,7 @@ describe('transactionStorage migration', () => {
 
   it('persists migrated rows so the default survives a reload', () => {
     localStorage.setItem(
-      'finance-analyzer.transactions.v1',
+      'finance-analyzer.transactions.v2',
       JSON.stringify([
         {
           id: 'legacy-1',
@@ -42,7 +42,7 @@ describe('transactionStorage migration', () => {
     )
     readTransactions()
 
-    const stored = JSON.parse(localStorage.getItem('finance-analyzer.transactions.v1') ?? '[]')
+    const stored = JSON.parse(localStorage.getItem('finance-analyzer.transactions.v2') ?? '[]')
     expect(stored[0].account).toBe(DEFAULT_ACCOUNT)
   })
 

@@ -2,7 +2,7 @@ import { DEFAULT_ACCOUNT } from './types'
 import type { Transaction } from './types'
 
 const STORAGE_KEY = 'finance-analyzer.transactions'
-const STORAGE_VERSION = 1
+const STORAGE_VERSION = 2
 const STORAGE_KEY_VERSIONED = `${STORAGE_KEY}.v${STORAGE_VERSION}`
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
