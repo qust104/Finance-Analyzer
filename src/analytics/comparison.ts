@@ -1,9 +1,12 @@
 import type { Transaction } from '../entities/transaction/model/types'
 import {
+  calculateAverageDailySpending,
   calculateSavings,
   calculateSavingsRate,
   calculateTotalExpenses,
   calculateTotalIncome,
+  daysElapsedInMonth,
+  daysInMonth,
 } from './calculations'
 
 export type ComparisonMetric = 'income' | 'expenses' | 'savings' | 'savingsRate'
@@ -71,6 +74,43 @@ export function compareMonthMetric(
     return { current, ...nullPrevious }
   }
   const previous = pick(previousRows)
+  const changePercent =
+    previous === 0 ? null : Math.round(((current - previous) / previous) * 1000) / 10
+  return { current, previous, changePercent, changePoints: null }
+}
+
+// Average daily spending compares the same slice of both months: when
+// the selected month is still running (say, August 20), it compares
+// August 1-20 against July 1-20, not against the whole of July.
+export function compareAverageDailySpending(
+  transactions: readonly Transaction[],
+  month: string,
+  today: string,
+): MetricComparison {
+  const nullPrevious = { previous: null, changePercent: null, changePoints: null }
+  const current = calculateAverageDailySpending(transactions, month, today)
+
+  const previousKey = previousMonthKey(month)
+  if (previousKey === null) {
+    return { current, ...nullPrevious }
+  }
+  const previousRows = rowsForMonth(transactions, previousKey)
+  if (previousRows.length === 0) {
+    return { current, ...nullPrevious }
+  }
+
+  const elapsed = daysElapsedInMonth(month, today)
+  const slice =
+    elapsed === null
+      ? previousRows
+      : previousRows.filter((row) => Number(row.date.slice(8, 10)) <= elapsed)
+  if (slice.length === 0) {
+    return { current, ...nullPrevious }
+  }
+
+  const previousExpenses = calculateTotalExpenses(slice)
+  const previousDays = elapsed === null ? daysInMonth(previousKey) : elapsed
+  const previous = previousExpenses === 0 ? 0 : Math.round(previousExpenses / previousDays)
   const changePercent =
     previous === 0 ? null : Math.round(((current - previous) / previous) * 1000) / 10
   return { current, previous, changePercent, changePoints: null }
