@@ -1,4 +1,4 @@
-import { seedTransactions } from '../../../data/seed'
+import { isLegacySeed, seedTransactions } from '../../../data/seed'
 import { readTransactions, writeTransactions } from './transactionStorage'
 import type { Category, Transaction, TransactionType } from './types'
 
@@ -73,5 +73,9 @@ function createTransactionRepository(
 export function createLocalStorageTransactionRepository(
   initial: readonly Transaction[] = seedTransactions,
 ): TransactionRepository {
-  return createTransactionRepository(readTransactions() ?? [...initial], writeTransactions)
+  const stored = readTransactions()
+  // Bump the demo set for users who never touched it: an untouched
+  // legacy seed matches exactly, personal data never gets replaced.
+  const next = stored === null || isLegacySeed(stored) ? [...initial] : stored
+  return createTransactionRepository(next, writeTransactions)
 }

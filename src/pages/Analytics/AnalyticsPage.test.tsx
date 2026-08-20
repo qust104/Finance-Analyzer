@@ -58,7 +58,7 @@ describe('analytics page', () => {
   it('shows total income across all data in the summary cards', async () => {
     await renderPage()
 
-    expect(screen.getByText('300 000 \u20bd')).toBeInTheDocument()
+    expect(screen.getByText('1 500 000 \u20bd')).toBeInTheDocument()
   })
 
   it('shows an empty state when there are no transactions', async () => {

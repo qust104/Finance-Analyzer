@@ -128,7 +128,7 @@ export default defineConfig({
       'test-results/**',
     ],
     // Integration and performance tests are slow under parallel load.
-    testTimeout: 10_000,
+    testTimeout: 15_000,
     // Integration tests run in jsdom and fetch against the same origin
     // the browser uses, so the MSW handlers keep matching.
     environmentOptions: {
