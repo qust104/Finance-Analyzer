@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareMonthMetric, previousMonthKey } from './comparison'
+import { compareAverageDailySpending, compareMonthMetric, previousMonthKey } from './comparison'
 
 const transaction = (
   month: string,
@@ -92,5 +92,83 @@ describe('compareMonthMetric', () => {
       transaction('2026-07', 'income', 800),
     ]
     expect(compareMonthMetric(transactions, '2026-08', 'income').current).toBe(1000)
+  })
+})
+
+describe('compareAverageDailySpending', () => {
+  it('reports a decrease in daily spending as a negative change', () => {
+    const transactions = [
+      transaction('2026-07', 'expense', 30000, '05'),
+      transaction('2026-08', 'expense', 24000, '05'),
+    ]
+    expect(compareAverageDailySpending(transactions, '2026-08', '2026-08-20')).toEqual({
+      current: 1200,
+      previous: 1500,
+      changePercent: -20,
+      changePoints: null,
+    })
+  })
+
+  it('reports an increase in daily spending as a positive change', () => {
+    const transactions = [
+      transaction('2026-07', 'expense', 24000, '05'),
+      transaction('2026-08', 'expense', 30000, '05'),
+    ]
+    expect(compareAverageDailySpending(transactions, '2026-08', '2026-08-20')).toEqual({
+      current: 1500,
+      previous: 1200,
+      changePercent: 25,
+      changePoints: null,
+    })
+  })
+
+  it('returns null deltas when the previous month has no data', () => {
+    const transactions = [transaction('2026-08', 'expense', 24000, '05')]
+    expect(compareAverageDailySpending(transactions, '2026-08', '2026-08-20')).toEqual({
+      current: 1200,
+      previous: null,
+      changePercent: null,
+      changePoints: null,
+    })
+  })
+
+  it('compares an unfinished month against the same slice of the previous month', () => {
+    const transactions = [
+      transaction('2026-07', 'expense', 30000, '05'),
+      transaction('2026-07', 'expense', 10000, '25'),
+      transaction('2026-08', 'expense', 20000, '05'),
+    ]
+    expect(compareAverageDailySpending(transactions, '2026-08', '2026-08-20')).toEqual({
+      current: 1000,
+      previous: 1500,
+      changePercent: -33.3,
+      changePoints: null,
+    })
+  })
+
+  it('reports zero change when the daily averages match', () => {
+    const transactions = [
+      transaction('2026-07', 'expense', 20000, '05'),
+      transaction('2026-08', 'expense', 20000, '05'),
+    ]
+    expect(compareAverageDailySpending(transactions, '2026-08', '2026-08-20')).toEqual({
+      current: 1000,
+      previous: 1000,
+      changePercent: 0,
+      changePoints: null,
+    })
+  })
+
+  it('compares completed months by their full lengths', () => {
+    const transactions = [
+      transaction('2026-06', 'expense', 30000, '05'),
+      transaction('2026-07', 'expense', 46500, '05'),
+    ]
+    expect(compareAverageDailySpending(transactions, '2026-07', '2026-08-20')).toEqual({
+      current: 1500,
+      previous: 1000,
+      changePercent: 50,
+      changePoints: null,
+    })
   })
 })

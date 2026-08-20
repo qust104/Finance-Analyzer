@@ -1,14 +1,24 @@
 import { memo, useMemo } from 'react'
-import { ArrowDown, ArrowUp, Percent, PiggyBank, Wallet, type LucideIcon } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  CalendarDays,
+  Info,
+  Percent,
+  PiggyBank,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react'
 import { formatCurrency, formatMonthKey, formatPercent } from '../../shared/lib/format'
-import { compareMonthMetric } from '../../analytics/comparison'
-import { calculateBalance } from '../../analytics/calculations'
+import { compareAverageDailySpending, compareMonthMetric } from '../../analytics/comparison'
+import { calculateBalance, localDateKey } from '../../analytics/calculations'
 import type { Transaction } from '../../entities/transaction/model/types'
 import './FinancialSummary.css'
 
 interface FinancialSummaryProps {
   transactions: readonly Transaction[]
   month: string
+  today?: string
 }
 
 // Delta tone follows the metric's semantics, not the arithmetic sign:
@@ -19,9 +29,11 @@ interface SummaryCard {
   value: string
   tone: 'neutral' | 'positive' | 'negative'
   icon: LucideIcon
-  iconTone: 'blue' | 'green' | 'red' | 'purple'
+  iconTone: 'blue' | 'green' | 'red' | 'purple' | 'orange'
   delta: string | null
   deltaTone: 'good' | 'bad' | null
+  noDataLabel?: string
+  hint?: string
 }
 
 // Monthly cards compare the selected month against the previous one;
@@ -30,6 +42,7 @@ interface SummaryCard {
 export const FinancialSummary = memo(function FinancialSummary({
   transactions,
   month,
+  today = localDateKey(),
 }: FinancialSummaryProps) {
   const cards = useMemo<SummaryCard[]>(() => {
     const balance = calculateBalance(transactions)
@@ -37,6 +50,7 @@ export const FinancialSummary = memo(function FinancialSummary({
     const expenses = compareMonthMetric(transactions, month, 'expenses')
     const savings = compareMonthMetric(transactions, month, 'savings')
     const savingsRate = compareMonthMetric(transactions, month, 'savingsRate')
+    const dailySpending = compareAverageDailySpending(transactions, month, today)
 
     const deltaOf = (
       comparison: { changePercent: number | null; changePoints: number | null; previous: number | null },
@@ -103,8 +117,18 @@ export const FinancialSummary = memo(function FinancialSummary({
         iconTone: 'purple' as const,
         ...deltaOf(savingsRate, true),
       },
+      {
+        label: 'Average Daily Spending',
+        value: formatCurrency(dailySpending.current),
+        tone: 'neutral' as const,
+        icon: CalendarDays,
+        iconTone: 'orange' as const,
+        ...deltaOf(dailySpending, false),
+        noDataLabel: '\u2014',
+        hint: 'Average amount spent per day during the selected month. For an unfinished month, the days elapsed so far are used.',
+      },
     ]
-  }, [transactions, month])
+  }, [transactions, month, today])
 
   return (
     <ul className="financial-summary">
@@ -115,16 +139,31 @@ export const FinancialSummary = memo(function FinancialSummary({
             <span className={`stat-card__icon stat-card__icon--${card.iconTone}`} aria-hidden="true">
               <Icon size={18} />
             </span>
-            <span className="stat-card__label">{card.label}</span>
+            <span className="stat-card__label">
+              {card.label}
+              {card.hint !== undefined && (
+                <span className="stat-card__hint" title={card.hint}>
+                  <Info size={13} aria-hidden="true" />
+                  <span className="sr-only">{card.hint}</span>
+                </span>
+              )}
+            </span>
             <span className="stat-card__value">{card.value}</span>
-            {card.delta !== null && (
+            {card.delta !== null ? (
               <span
                 className={`stat-card__delta stat-card__delta--${card.deltaTone}`}
                 aria-label={`vs ${formatMonthKey(month)}`}
               >
                 {card.delta} <span aria-hidden="true">vs prev.</span>
               </span>
-            )}
+            ) : card.noDataLabel !== undefined ? (
+              <span
+                className="stat-card__delta stat-card__delta--none"
+                aria-label={`vs ${formatMonthKey(month)}`}
+              >
+                {card.noDataLabel} <span aria-hidden="true">vs prev.</span>
+              </span>
+            ) : null}
           </li>
         )
       })}

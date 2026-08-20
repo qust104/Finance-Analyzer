@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../entities/transaction/model/types'
 import {
+  calculateAverageDailySpending,
   calculateBalance,
   calculateCategoryStats,
   calculateLargestExpense,
@@ -9,6 +10,8 @@ import {
   calculateSavingsRate,
   calculateTotalExpenses,
   calculateTotalIncome,
+  daysElapsedInMonth,
+  daysInMonth,
 } from './calculations'
 
 const fixture = (overrides: Partial<Transaction> = {}): Transaction => ({
@@ -169,5 +172,50 @@ describe('calculateLargestExpense', () => {
 
   it('returns null when there are no expenses', () => {
     expect(calculateLargestExpense(EMPTY)).toBeNull()
+  })
+})
+
+describe('daysInMonth', () => {
+  it('returns the real day count of a month', () => {
+    expect(daysInMonth('2026-07')).toBe(31)
+    expect(daysInMonth('2026-02')).toBe(28)
+    expect(daysInMonth('2028-02')).toBe(29)
+  })
+
+  it('returns 0 for malformed input', () => {
+    expect(daysInMonth('2026-13')).toBe(0)
+    expect(daysInMonth('nope')).toBe(0)
+  })
+})
+
+describe('daysElapsedInMonth', () => {
+  it('returns the elapsed day when the month is the current one', () => {
+    expect(daysElapsedInMonth('2026-08', '2026-08-20')).toBe(20)
+  })
+
+  it('returns null for months that are not the current one', () => {
+    expect(daysElapsedInMonth('2026-07', '2026-08-20')).toBeNull()
+  })
+})
+
+describe('calculateAverageDailySpending', () => {
+  it('divides expenses by the full month length for completed months', () => {
+    const transactions = [fixture({ id: 'a', date: '2026-07-01', amount: 31000 })]
+    expect(calculateAverageDailySpending(transactions, '2026-07', '2026-08-20')).toBe(1000)
+  })
+
+  it('divides by the days elapsed so far for the current month', () => {
+    const transactions = [fixture({ id: 'a', date: '2026-08-01', amount: 20000 })]
+    expect(calculateAverageDailySpending(transactions, '2026-08', '2026-08-20')).toBe(1000)
+  })
+
+  it('ignores income transactions', () => {
+    const transactions = [fixture({ id: 'a', type: 'income', amount: 31000 })]
+    expect(calculateAverageDailySpending(transactions, '2026-07', '2026-08-20')).toBe(0)
+  })
+
+  it('returns 0 when there are no expenses or no rows', () => {
+    expect(calculateAverageDailySpending(EMPTY, '2026-07', '2026-08-20')).toBe(0)
+    expect(calculateAverageDailySpending(EMPTY, '2026-08', '2026-08-20')).toBe(0)
   })
 })
